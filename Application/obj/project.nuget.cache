@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "MyJF8rbxu1k=",
+  "success": true,
+  "projectFilePath": "/home/besho/API/KalemnyShokran/Application/Application.csproj",
+  "expectedPackageFiles": [
+    "/home/besho/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.9/microsoft.aspnetcore.app.ref.9.0.9.nupkg.sha512"
+  ],
+  "logs": []
+}

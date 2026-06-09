@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "UVyxi3A4leI=",
+  "success": true,
+  "projectFilePath": "/home/besho/API/KalemnyShokran/Domain/Domain.csproj",
+  "expectedPackageFiles": [
+    "/home/besho/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.9/microsoft.aspnetcore.app.ref.9.0.9.nupkg.sha512"
+  ],
+  "logs": []
+}
