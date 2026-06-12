@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "KMi+P+7+TB0=",
+  "dgSpecHash": "N0lJKDOHq+0=",
   "success": true,
   "projectFilePath": "/home/besho/API/KalemnyShokran/API/API.csproj",
   "expectedPackageFiles": [
@@ -39,9 +39,14 @@
     "/home/besho/.nuget/packages/microsoft.identitymodel.jsonwebtokens/8.14.0/microsoft.identitymodel.jsonwebtokens.8.14.0.nupkg.sha512",
     "/home/besho/.nuget/packages/microsoft.identitymodel.logging/8.14.0/microsoft.identitymodel.logging.8.14.0.nupkg.sha512",
     "/home/besho/.nuget/packages/microsoft.identitymodel.tokens/8.14.0/microsoft.identitymodel.tokens.8.14.0.nupkg.sha512",
+    "/home/besho/.nuget/packages/microsoft.openapi/1.6.23/microsoft.openapi.1.6.23.nupkg.sha512",
     "/home/besho/.nuget/packages/mono.texttemplating/3.0.0/mono.texttemplating.3.0.0.nupkg.sha512",
     "/home/besho/.nuget/packages/npgsql/9.0.0/npgsql.9.0.0.nupkg.sha512",
     "/home/besho/.nuget/packages/npgsql.entityframeworkcore.postgresql/9.0.0/npgsql.entityframeworkcore.postgresql.9.0.0.nupkg.sha512",
+    "/home/besho/.nuget/packages/swashbuckle.aspnetcore/9.0.0/swashbuckle.aspnetcore.9.0.0.nupkg.sha512",
+    "/home/besho/.nuget/packages/swashbuckle.aspnetcore.swagger/9.0.0/swashbuckle.aspnetcore.swagger.9.0.0.nupkg.sha512",
+    "/home/besho/.nuget/packages/swashbuckle.aspnetcore.swaggergen/9.0.0/swashbuckle.aspnetcore.swaggergen.9.0.0.nupkg.sha512",
+    "/home/besho/.nuget/packages/swashbuckle.aspnetcore.swaggerui/9.0.0/swashbuckle.aspnetcore.swaggerui.9.0.0.nupkg.sha512",
     "/home/besho/.nuget/packages/system.codedom/6.0.0/system.codedom.6.0.0.nupkg.sha512",
     "/home/besho/.nuget/packages/system.collections.immutable/7.0.0/system.collections.immutable.7.0.0.nupkg.sha512",
     "/home/besho/.nuget/packages/system.composition/7.0.0/system.composition.7.0.0.nupkg.sha512",
