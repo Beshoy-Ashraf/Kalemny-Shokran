@@ -1,0 +1,12 @@
+/home/besho/API/KalemnyShokran/Domain/bin/Release/net9.0/Domain.deps.json
+/home/besho/API/KalemnyShokran/Domain/bin/Release/net9.0/Domain.dll
+/home/besho/API/KalemnyShokran/Domain/bin/Release/net9.0/Domain.pdb
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/Domain.GeneratedMSBuildEditorConfig.editorconfig
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/Domain.AssemblyInfoInputs.cache
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/Domain.AssemblyInfo.cs
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/Domain.csproj.CoreCompileInputs.cache
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/Domain.sourcelink.json
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/Domain.dll
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/refint/Domain.dll
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/Domain.pdb
+/home/besho/API/KalemnyShokran/Domain/obj/Release/net9.0/ref/Domain.dll

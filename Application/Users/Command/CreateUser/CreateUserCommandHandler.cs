@@ -16,6 +16,7 @@ public sealed class CreateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestH
                   request.ProfilePictureUrl
             );
             await unitOfWork.Users.AddAsync(user, cancellationToken);
+            unitOfWork.Complete();
             return user.Id;
       }
 }

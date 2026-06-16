@@ -16,7 +16,6 @@ public sealed class GetUsersQueryHandler(IUnitOfWork unitOfWork) : IRequestHandl
             var users = new List<UserDto>();
             foreach (var item in result)
             {
-                  // create a DTO instance for each entity (map properties as needed)
                   users.Add(new UserDto(item));
             }
 

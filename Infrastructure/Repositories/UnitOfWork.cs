@@ -7,8 +7,8 @@ namespace Infrastructure.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
-      public IBaseRepository<User> Users { get; private set; } = null!;
       private readonly AppDBContext _dbContext;
+      public IBaseRepository<User> Users { get; private set; } = null!;
 
 
       public UnitOfWork(AppDBContext dBContext)
