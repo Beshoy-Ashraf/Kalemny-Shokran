@@ -41,9 +41,9 @@ public class BaseRepository<T>(AppDBContext appDBContext) : IBaseRepository<T> w
 
       }
 
-      public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken)
+      public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> criteria, CancellationToken cancellationToken)
       {
-            return await _dbContext.Set<T>().ToListAsync(cancellationToken);
+            return await _dbContext.Set<T>().Where(criteria).ToListAsync(cancellationToken);
       }
 
       public async Task<T> GetByIdAsync(Guid id, CancellationToken cancellationToken)

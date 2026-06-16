@@ -1,5 +1,6 @@
 using API.Request;
 using Application.Users.Command.CreateUser;
+using Application.Users.Command.DeleteUser;
 using Application.Users.Queries.GetUsers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,13 @@ public class UserController(IMediator mediator) : ControllerBase
             var result = await mediator.Send(command);
             return Ok(result);
 
-
+      }
+      [HttpDelete("{id:guid}")]
+      public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
+      {
+            var command = new DeleteUserCommand(id);
+            var result = await mediator.Send(command);
+            return Ok(result);
 
       }
 

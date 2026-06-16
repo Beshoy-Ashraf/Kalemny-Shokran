@@ -10,6 +10,9 @@ public class User(string username, string email, string passwordHash, string dis
       public string ProfilePictureUrl { get; private set; } = profilePictureUrl;
       public bool IsOnline { get; private set; } = false;
       public DateTime LastSeen { get; private set; }
+      public DateTime CreatedDate { get; set; }
+      public DateTime UpdateDate { get; set; }
+      public DateTime DeleteDate { get; set; }
 
       public void UpdateStatus(bool isOnline)
       {

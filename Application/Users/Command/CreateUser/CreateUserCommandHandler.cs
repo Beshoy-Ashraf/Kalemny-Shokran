@@ -14,7 +14,10 @@ public sealed class CreateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestH
                   request.PasswordHash,
                   request.DisplayName,
                   request.ProfilePictureUrl
+
             );
+            user.CreatedDate = DateTime.UtcNow;
+            user.UpdateDate = DateTime.UtcNow;
             await unitOfWork.Users.AddAsync(user, cancellationToken);
             unitOfWork.Complete();
             return user.Id;
