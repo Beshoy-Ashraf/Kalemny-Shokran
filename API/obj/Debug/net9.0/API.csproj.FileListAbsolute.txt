@@ -140,3 +140,7 @@
 /home/besho/API/KalemnyShokran/API/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
 /home/besho/API/KalemnyShokran/API/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
 /home/besho/API/KalemnyShokran/API/obj/Debug/net9.0/API.MvcApplicationPartsAssemblyInfo.cs
+/home/besho/API/KalemnyShokran/API/bin/Debug/net9.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/besho/API/KalemnyShokran/API/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.dll
+/home/besho/API/KalemnyShokran/API/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/besho/API/KalemnyShokran/API/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll

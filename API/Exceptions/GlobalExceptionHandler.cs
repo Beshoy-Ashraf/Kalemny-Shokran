@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Common.NotFoundException;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
@@ -21,7 +22,12 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
                         Title = "Validation Failed!",
                         Status = StatusCodes.Status400BadRequest
                   },
-
+                  UnauthorizedException ex => new ProblemDetails
+                  {
+                        Title = "Email Not Unauthorized!",
+                        Detail = ex.Message,
+                        Status = StatusCodes.Status404NotFound
+                  },
                   NotFoundException ex => new ProblemDetails
                   {
                         Title = "Resource Not Found!",
