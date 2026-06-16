@@ -2,7 +2,7 @@ using Domain.Entities;
 
 namespace Application.Users.Queries.Common;
 
-public class UserDto(User user)
+public class UserResponse(User user)
 {
 
       public Guid Id => user.Id;

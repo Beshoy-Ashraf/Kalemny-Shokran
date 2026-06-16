@@ -8,6 +8,7 @@ using Domain.Interfaces;
 using Infrastructure.Repositories;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Builder;
+using API.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMediatR(
@@ -19,6 +20,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddValidatorsFromAssembly(typeof(IAssemblyMarker).Assembly);
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -27,6 +29,7 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidateBehav
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -36,4 +39,5 @@ app.UseSwaggerUI(c =>
 });
 app.MapControllers();
 
+app.UseExceptionHandler();
 app.Run();

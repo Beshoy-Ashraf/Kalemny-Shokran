@@ -1,6 +1,6 @@
-using API.Request;
 using Application.Users.Command.CreateUser;
 using Application.Users.Command.DeleteUser;
+using Application.Users.Command;
 using Application.Users.Queries.GetUserById;
 using Application.Users.Queries.GetUsers;
 using MediatR;
@@ -28,7 +28,7 @@ public class UserController(IMediator mediator) : ControllerBase
       [HttpPost]
       public async Task<IActionResult> CreateUser(UserRequest request)
       {
-            var command = new CreateUserCommand(request.DisplayName, request.Username, request.Email, request.PasswordHash, request.ProfilePictureUrl);
+            var command = new CreateUserCommand(request);
             var result = await mediator.Send(command);
             return Ok(result);
 

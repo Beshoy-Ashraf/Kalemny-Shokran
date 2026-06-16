@@ -9,11 +9,11 @@ public sealed class CreateUserCommandHandler(IUnitOfWork unitOfWork) : IRequestH
       public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
       {
             var user = new User(
-                  request.Username,
-                  request.Email,
-                  request.PasswordHash,
-                  request.DisplayName,
-                  request.ProfilePictureUrl
+                  request.UserRequest.Username,
+                  request.UserRequest.Email,
+                  request.UserRequest.Password,
+                  request.UserRequest.DisplayName,
+                  request.UserRequest.ProfilePictureUrl ?? ""
 
             );
             user.CreatedDate = DateTime.UtcNow;
