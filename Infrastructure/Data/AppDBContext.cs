@@ -6,6 +6,7 @@ namespace Infrastructure.Data;
 public class AppDBContext(DbContextOptions<AppDBContext> option) : DbContext(option)
 {
       public DbSet<User> Users { get; set; }
+      public DbSet<RefreshToken> RefreshTokens { get; set; }
 
       protected override void OnModelCreating(ModelBuilder modelBuilder)
       {

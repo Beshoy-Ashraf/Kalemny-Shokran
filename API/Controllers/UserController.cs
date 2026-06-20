@@ -5,6 +5,7 @@ using Application.Users.Queries.GetUserById;
 using Application.Users.Queries.GetUsers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
@@ -13,18 +14,23 @@ namespace API.Controllers;
 public class UserController(IMediator mediator) : ControllerBase
 {
 
+      [Authorize]
       [HttpGet]
       public async Task<IActionResult> GetUsers()
       {
             var result = await mediator.Send(new GetUsersQuery());
             return Ok(result);
       }
+
+
       [HttpGet("{id:guid}")]
       public async Task<IActionResult> GetUser([FromRoute] Guid id)
       {
             var result = await mediator.Send(new GetUserByIdQuery(id));
             return Ok(result);
       }
+
+
       [HttpPost]
       public async Task<IActionResult> CreateUser(UserRequest request)
       {
@@ -33,6 +39,8 @@ public class UserController(IMediator mediator) : ControllerBase
             return Ok(result);
 
       }
+
+
       [HttpDelete("{id:guid}")]
       public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
       {
