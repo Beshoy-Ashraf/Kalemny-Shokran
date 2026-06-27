@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Entities.Conversation;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
@@ -7,11 +8,9 @@ public class AppDBContext(DbContextOptions<AppDBContext> option) : DbContext(opt
 {
       public DbSet<User> Users { get; set; }
       public DbSet<RefreshToken> RefreshTokens { get; set; }
-      public DbSet<Attachment> Attachments { get; set; }
-      public DbSet<Contact> Contacts { get; set; }
+      public DbSet<UserConversation> UserConversations { get; set; }
       public DbSet<Conversation> Conversations { get; set; }
-      public DbSet<Message> Messages { get; set; }
-      public DbSet<Notification> Notifications { get; set; }
+
 
       protected override void OnModelCreating(ModelBuilder modelBuilder)
       {

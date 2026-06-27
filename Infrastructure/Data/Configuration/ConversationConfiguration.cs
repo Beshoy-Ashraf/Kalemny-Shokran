@@ -1,4 +1,4 @@
-using Domain.Entities;
+using Domain.Entities.Conversation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,12 +8,10 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
 {
       public void Configure(EntityTypeBuilder<Conversation> builder)
       {
-            builder.HasKey(c => c.Id);
+            builder.HasKey(x => x.Id);
 
-
-
-            builder.HasMany(c => c.Participants)
-                   .WithMany()
-                   .UsingEntity(j => j.ToTable("ConversationParticipants"));
+            builder.HasMany(x => x.UserConversations)
+            .WithOne(x => x.Conversation)
+            .HasForeignKey(x => x.ConversationId);
       }
 }
