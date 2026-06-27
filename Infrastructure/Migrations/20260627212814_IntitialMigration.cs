@@ -51,6 +51,29 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserSenderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    IsText = table.Column<bool>(type: "boolean", nullable: false),
+                    SendDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EditDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DeleteDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Messages_Users_UserSenderId",
+                        column: x => x.UserSenderId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RefreshTokens",
                 columns: table => new
                 {
@@ -100,6 +123,37 @@ namespace Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserMessageSeens",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SeenDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserMessageSeens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserMessageSeens_Messages_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserMessageSeens_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_UserSenderId",
+                table: "Messages",
+                column: "UserSenderId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_UserId",
                 table: "RefreshTokens",
@@ -114,6 +168,16 @@ namespace Infrastructure.Migrations
                 name: "IX_UserConversations_UserId",
                 table: "UserConversations",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserMessageSeens_MessageId",
+                table: "UserMessageSeens",
+                column: "MessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserMessageSeens_UserId",
+                table: "UserMessageSeens",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -126,7 +190,13 @@ namespace Infrastructure.Migrations
                 name: "UserConversations");
 
             migrationBuilder.DropTable(
+                name: "UserMessageSeens");
+
+            migrationBuilder.DropTable(
                 name: "Conversations");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Users");

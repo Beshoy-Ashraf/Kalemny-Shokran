@@ -15,6 +15,7 @@ public class User(string username, string email, string passwordHash, string dis
       public DateTime UpdateDate { get; set; }
       public DateTime DeleteDate { get; set; }
       public List<RefreshToken> RefreshTokens { get; set; } = [];
+      public List<Message.Message> Messages { get; set; } = [];
 
       public void UpdateStatus(bool isOnline)
       {
