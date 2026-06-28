@@ -6,5 +6,6 @@ public interface IUnitOfWork : IDisposable
 {
       IBaseRepository<User> Users { get; }
       IUserRepository UserRepository { get; }
+      IConversationRepository ConversationRepository { get; }
       int Complete();
 }

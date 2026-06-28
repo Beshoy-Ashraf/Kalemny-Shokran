@@ -18,5 +18,9 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
             .WithOne(x => x.Message)
             .HasForeignKey(x => x.MessageId);
 
+
+            builder.HasMany(x => x.ConversationMessages)
+            .WithOne(x => x.Message)
+            .HasForeignKey(x => x.MessageId);
       }
 }

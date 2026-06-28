@@ -22,6 +22,10 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
             .WithOne(x => x.Conversation)
             .HasForeignKey(x => x.ConversationId);
 
+            builder.HasMany(x => x.ConversationMessages)
+            .WithOne(x => x.Conversation)
+            .HasForeignKey(x => x.ConversationId);
+
 
       }
 }

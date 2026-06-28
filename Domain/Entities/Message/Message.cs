@@ -10,6 +10,7 @@ public class Message(Guid userSenderId, string content, bool isText)
       public DateTime EditDate { get; private set; } = DateTime.UtcNow;
       public DateTime DeleteDate { get; private set; }
       public List<UserMessageSeen> UserMessageSees { get; set; } = [];
+      public List<ConversationMessage> ConversationMessages { get; set; } = [];
       public User? User { get; set; }
 
 

@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Entities.Conversation;
 using Domain.Interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +12,19 @@ public class UnitOfWork : IUnitOfWork
 
       public IBaseRepository<User> Users { get; private set; } = null!;
       public IUserRepository UserRepository { get; private set; }
+      public IMessageRepository MessageRepository { get; private set; }
 
+      public IConversationRepository ConversationRepository { get; private set; }
 
       public UnitOfWork(AppDBContext dBContext)
       {
             _dbContext = dBContext;
             Users = new BaseRepository<User>(_dbContext);
             UserRepository = new UserRepository(_dbContext);
+            MessageRepository = new MessageRepository(_dbContext);
+            ConversationRepository = new ConversationRepository(_dbContext);
+
+
       }
       public int Complete()
       {
