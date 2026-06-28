@@ -13,5 +13,15 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
             builder.HasMany(x => x.UserConversations)
             .WithOne(x => x.Conversation)
             .HasForeignKey(x => x.ConversationId);
+
+            builder.HasMany(x => x.ConversationAdmins)
+            .WithOne(x => x.Conversation)
+            .HasForeignKey(x => x.ConversationId);
+
+            builder.HasMany(x => x.ConversationNotifications)
+            .WithOne(x => x.Conversation)
+            .HasForeignKey(x => x.ConversationId);
+
+
       }
 }

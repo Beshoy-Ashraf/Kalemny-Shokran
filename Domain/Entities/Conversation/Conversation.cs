@@ -1,5 +1,6 @@
 
 using System.Runtime.CompilerServices;
+using Domain.Entities.Notification;
 
 namespace Domain.Entities.Conversation;
 
@@ -13,6 +14,8 @@ public class Conversation(string title, string description, bool isGroup, string
       public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
       public DateTime UpdatedDate { get; private set; } = DateTime.UtcNow;
       public DateTime DeletedDate { get; private set; } = default;
-      public List<UserConversation> UserConversations { get; private set; } = [];
+      public List<UserConversation> UserConversations { get; set; } = [];
+      public List<ConversationAdmin> ConversationAdmins { get; set; } = [];
 
+      public List<ConversationNotification> ConversationNotifications { get; set; } = [];
 }

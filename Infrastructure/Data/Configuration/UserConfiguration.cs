@@ -14,5 +14,16 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(x => x.User)
             .HasForeignKey(i => i.UserId);
 
+            builder.HasMany(x => x.ConversationAdmins)
+            .WithOne(x => x.User)
+            .HasForeignKey(x => x.UserId);
+
+            builder.HasMany(x => x.UserNotifications)
+            .WithOne(x => x.User)
+            .HasForeignKey(x => x.UserId);
+
+            builder.HasMany(x => x.UserMessageSeens)
+            .WithOne(x => x.User)
+            .HasForeignKey(x => x.UserId);
       }
 }

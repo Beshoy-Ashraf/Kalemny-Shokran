@@ -1,3 +1,7 @@
+using Domain.Entities.Conversation;
+using Domain.Entities.Message;
+using Domain.Entities.Notification;
+
 namespace Domain.Entities;
 
 public class User(string username, string email, string passwordHash, string displayName, string profilePictureUrl)
@@ -16,6 +20,9 @@ public class User(string username, string email, string passwordHash, string dis
       public DateTime DeleteDate { get; set; }
       public List<RefreshToken> RefreshTokens { get; set; } = [];
       public List<Message.Message> Messages { get; set; } = [];
+      public List<ConversationAdmin> ConversationAdmins { get; set; } = [];
+      public List<UserNotification> UserNotifications { get; set; } = [];
+      public List<UserMessageSeen> UserMessageSeens { get; set; } = [];
 
       public void UpdateStatus(bool isOnline)
       {

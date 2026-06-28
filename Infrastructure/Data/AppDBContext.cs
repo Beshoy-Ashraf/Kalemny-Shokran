@@ -13,6 +13,7 @@ public class AppDBContext(DbContextOptions<AppDBContext> option) : DbContext(opt
       public DbSet<Conversation> Conversations { get; set; }
       public DbSet<Message> Messages { get; set; }
       public DbSet<UserMessageSeen> UserMessageSeens { get; set; }
+      public DbSet<ConversationAdmin> ConversationAdmins { get; set; }
 
 
       protected override void OnModelCreating(ModelBuilder modelBuilder)
