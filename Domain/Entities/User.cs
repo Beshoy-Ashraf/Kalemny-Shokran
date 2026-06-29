@@ -23,6 +23,8 @@ public class User(string username, string email, string passwordHash, string dis
       public List<ConversationAdmin> ConversationAdmins { get; set; } = [];
       public List<UserNotification> UserNotifications { get; set; } = [];
       public List<UserMessageSeen> UserMessageSeens { get; set; } = [];
+      public List<UserConversation> UserConversations { get; set; } = [];
+
 
       public void UpdateStatus(bool isOnline)
       {

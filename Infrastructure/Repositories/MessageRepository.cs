@@ -11,7 +11,8 @@ public class MessageRepository(AppDBContext appDBContext) : BaseRepository<Messa
       {
             var result = await _dbContext.Set<Message>()
                 .Include(m => m.ConversationMessages)
-                .Where(m => m.ConversationMessages.Any(cm => cm.ConversationId == conversationId)
+                .Where(m => m.ConversationMessages.Any(cm => cm.ConversationId == conversationId && cm.MessageId == m.Id)
+
                          && m.DeleteDate == default)
                   .OrderByDescending(m => m.SendDate)
                   .Skip((pageNumber - 1) * pageSize)
@@ -20,7 +21,6 @@ public class MessageRepository(AppDBContext appDBContext) : BaseRepository<Messa
 
             return result;
       }
-
       public async Task MarkMessageAsSeenAsync(Guid messageId, Guid userId, CancellationToken cancellationToken = default)
       {
             var hasSeen = await _dbContext.Set<UserMessageSeen>()
@@ -40,7 +40,7 @@ public class MessageRepository(AppDBContext appDBContext) : BaseRepository<Messa
       {
             var result = await _dbContext.Set<Message>()
                 .Include(m => m.ConversationMessages)
-                .Where(m => m.ConversationMessages.Any(cm => cm.ConversationId == conversationId)
+                .Where(m => m.ConversationMessages.Any(cm => cm.ConversationId == conversationId && cm.MessageId == m.Id)
                          && m.UserSenderId != userId
                          && m.DeleteDate == default)
                 .Where(m => !m.UserMessageSees.Any(ums => ums.UserId == userId))
@@ -48,18 +48,12 @@ public class MessageRepository(AppDBContext appDBContext) : BaseRepository<Messa
 
             return result;
       }
-
-
-
-
-
       public async Task<Message?> GetMessageWithSeenReceiptsAsync(Guid messageId, CancellationToken cancellationToken = default)
       {
             return await _dbContext.Set<Message>()
                   .Include(m => m.UserMessageSees)
                   .FirstOrDefaultAsync(m => m.Id == messageId && m.DeleteDate == default, cancellationToken);
       }
-
       public async Task SoftDeleteMessageAsync(Guid messageId, CancellationToken cancellationToken = default)
       {
             var message = await _dbContext.Set<Message>().FindAsync([messageId], cancellationToken);
