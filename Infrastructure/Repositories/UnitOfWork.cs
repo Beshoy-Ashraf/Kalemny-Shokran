@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
       public IBaseRepository<User> Users { get; private set; } = null!;
       public IUserRepository UserRepository { get; private set; }
       public IMessageRepository MessageRepository { get; private set; }
+      public INotificationRepository NotificationRepository { get; private set; }
 
       public IConversationRepository ConversationRepository { get; private set; }
 
@@ -23,8 +24,7 @@ public class UnitOfWork : IUnitOfWork
             UserRepository = new UserRepository(_dbContext);
             MessageRepository = new MessageRepository(_dbContext);
             ConversationRepository = new ConversationRepository(_dbContext);
-
-
+            NotificationRepository = new NotificationRepository(_dbContext);
       }
       public int Complete()
       {

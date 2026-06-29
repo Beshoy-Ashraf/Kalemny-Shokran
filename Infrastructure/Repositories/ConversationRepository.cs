@@ -19,8 +19,6 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
             .ToListAsync(cancellationToken);
             return result;
       }
-
-
       public async Task<IEnumerable<Conversation>> GetUserInboxAsync(Guid userId, CancellationToken cancellationToken)
       {
             return await _dbContext.Conversations
@@ -32,33 +30,29 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
                     .ThenInclude(cm => cm.Message)
                 .ToListAsync(cancellationToken);
       }
-
       public async Task<Conversation?> GetConversationWithDetailsAsync(Guid conversationId, CancellationToken cancellationToken)
       {
-            return await _dbContext.Set<Conversation>()
+            return await _dbContext.Conversations
                   .Include(c => c.UserConversations)
                   .Include(c => c.ConversationAdmins)
                   .Include(c => c.ConversationNotifications)
                   .FirstOrDefaultAsync(c => c.Id == conversationId, cancellationToken);
       }
-
       public async Task<Conversation?> GetDirectConversationAsync(Guid user1Id, Guid user2Id, CancellationToken cancellationToken)
       {
-            return await _dbContext.Set<Conversation>()
+            return await _dbContext.Conversations
                   .Where(c => c.UserConversations.Count == 2 &&
                               c.UserConversations.Any(uc => uc.UserId == user1Id) &&
                               c.UserConversations.Any(uc => uc.UserId == user2Id))
                   .FirstOrDefaultAsync(cancellationToken);
       }
-
       public async Task<IEnumerable<Conversation>> GetUserConversationsAsync(Guid userId, CancellationToken cancellationToken)
       {
-            return await _dbContext.Set<Conversation>()
+            return await _dbContext.Conversations
                   .Where(c => c.UserConversations.Any(uc => uc.UserId == userId))
                   .Include(c => c.UserConversations)
                   .ToListAsync(cancellationToken);
       }
-
       public async Task<IEnumerable<Conversation>> GetUserConversationsPagedAsync(Guid userId, int pageNumber, int pageSize, CancellationToken cancellationToken)
       {
             return await _dbContext.Conversations
@@ -68,7 +62,6 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
                   .Take(pageSize)
                   .ToListAsync(cancellationToken);
       }
-
       public async Task<bool> HasDirectConversationAsync(Guid user1Id, Guid user2Id, CancellationToken cancellationToken)
       {
             return await _dbContext.Conversations
@@ -77,27 +70,22 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
                                  c.UserConversations.Any(uc => uc.UserId == user2Id),
                             cancellationToken);
       }
-
       public async Task<bool> IsUserAdminInConversationAsync(Guid conversationId, Guid userId, CancellationToken cancellationToken)
       {
-            return await _dbContext.Set<Conversation>()
+            return await _dbContext.Conversations
                   .AnyAsync(c => c.Id == conversationId &&
                                  c.ConversationAdmins.Any(ca => ca.UserId == userId),
                             cancellationToken);
       }
-
       public async Task<bool> IsUserInConversationAsync(Guid conversationId, Guid userId, CancellationToken cancellationToken)
       {
-            return await _dbContext.Set<Conversation>()
+            return await _dbContext.Conversations
                   .AnyAsync(c => c.Id == conversationId &&
                                  c.UserConversations.Any(uc => uc.UserId == userId),
                             cancellationToken);
       }
-
       public async Task<IEnumerable<Conversation>> SearchUserConversationsAsync(Guid userId, string searchTerm, CancellationToken cancellationToken = default)
       {
-
-
             return await _dbContext.Conversations
                   .Include(c => c.UserConversations)
                         .ThenInclude(uc => uc.User)
