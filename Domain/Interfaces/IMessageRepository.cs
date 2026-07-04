@@ -2,7 +2,7 @@ using Domain.Entities.Message;
 
 namespace Domain.Interfaces;
 
-public interface IMessageRepository
+public interface IMessageRepository : IBaseRepository<Message>
 {
       Task<IEnumerable<Message>> GetMessagesByConversationIdAsync(Guid conversationId, int pageNumber, int pageSize, CancellationToken cancellationToken);
 

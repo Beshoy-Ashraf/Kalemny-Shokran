@@ -8,5 +8,6 @@ public interface IUnitOfWork : IDisposable
       IUserRepository UserRepository { get; }
       IConversationRepository ConversationRepository { get; }
       INotificationRepository NotificationRepository { get; }
+      IMessageRepository MessageRepository { get; }
       int Complete();
 }
