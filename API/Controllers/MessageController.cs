@@ -1,5 +1,9 @@
 using Application.Messages.Command.CreateMessage;
+using Application.Messages.Command.DeleteMessage;
+using Application.Messages.Command.UpdateMessage;
 using Application.Messages.Queries.GetMessageById;
+using Application.Messages.Queries.GetMessages;
+using Application.Messages.Queries.GetSpecificMessage;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,14 +26,22 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return Ok(result);
       }
-      // [HttpGet]
-      // public async Task<IActionResult> GetAllMessages([FromQuery] string? searchKeyword, CancellationToken cancellationToken)
-      // {
-      //       var query = new GetAllMessagesQuery(searchKeyword);
-      //       var result = await mediator.Send(query, cancellationToken);
+      [HttpGet]
+      public async Task<IActionResult> GetAllMessages(CancellationToken cancellationToken)
+      {
+            var query = new GetMessagesQuery();
+            var result = await mediator.Send(query, cancellationToken);
 
-      //       return Ok(result);
-      // }
+            return Ok(result);
+      }
+      [HttpGet("search")]
+      public async Task<IActionResult> GetSpecificMessage([FromQuery] string searchKeyword, CancellationToken cancellationToken)
+      {
+            var query = new GetSpecificMessageQuery(searchKeyword);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return Ok(result);
+      }
       [HttpPost]
       public async Task<IActionResult> CreateMessage([FromBody] CreateMessageCommand command, CancellationToken cancellationToken)
       {
@@ -37,24 +49,24 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return CreatedAtAction(nameof(GetMessageById), new { id = resultId }, command);
       }
-      // [HttpPut("{id:guid}")]
-      // public async Task<IActionResult> UpdateMessage(Guid id, [FromBody] UpdateMessageCommand command, CancellationToken cancellationToken)
-      // {
-      //       if (id != command.Id)
-      //             return BadRequest("Id in URL does not match Id in the body.");
+      [HttpPut("{id:guid}")]
+      public async Task<IActionResult> UpdateMessage(Guid id, [FromBody] UpdateMessageCommand command, CancellationToken cancellationToken)
+      {
+            if (id != command.MessageId)
+                  return BadRequest("Id in URL does not match Id in the body.");
 
-      //       await mediator.Send(command, cancellationToken);
+            await mediator.Send(command, cancellationToken);
 
-      //       return NoContent();
-      // }
-      // [HttpDelete("{id:guid}/hard")]
-      // public async Task<IActionResult> HardDeleteMessage(Guid id, CancellationToken cancellationToken)
-      // {
-      //       var command = new HardDeleteMessageCommand(id);
-      //       await mediator.Send(command, cancellationToken);
+            return NoContent();
+      }
+      [HttpDelete("{id:guid}")]
+      public async Task<IActionResult> DeleteMessage(Guid id, CancellationToken cancellationToken)
+      {
+            var command = new DeleteMessageCommand(id);
+            await mediator.Send(command, cancellationToken);
 
-      //       return NoContent();
-      // }
+            return NoContent();
+      }
       // [HttpGet("conversation/{conversationId:guid}")]
       // public async Task<IActionResult> GetMessagesByConversationId(Guid conversationId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
       // {

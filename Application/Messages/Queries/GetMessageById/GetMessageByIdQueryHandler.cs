@@ -8,19 +8,18 @@ public class GetMessageByIdQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
 {
       public async Task<MessageResponse> Handle(GetMessageByIdQuery request, CancellationToken cancellationToken)
       {
-            var message = await unitOfWork.MessageRepository.GetByIdAsync(request.Id, cancellationToken) ?? throw new Exception("Message not found");
-
-            var messageConversation = await unitOfWork.MessageRepository.FindAsync(
-                  x => x.Id == message.Id,
+            var message = await unitOfWork.MessageRepository.FindAsync(
+                  x => x.Id == request.Id && x.DeleteDate == default,
                   cancellationToken,
-                  ["ConversationMessages"]
-            );
+                  ["ConversationMessages", "UserMessageSees"]
+            ) ?? throw new KeyNotFoundException("Message not found or has been deleted.");
+
 
             var messageSeen = await unitOfWork.MessageRepository.GetMessageWithSeenReceiptsAsync(request.Id, cancellationToken);
 
             var response = new MessageResponse(message)
             {
-                  ConversationId = messageConversation.ConversationMessages.FirstOrDefault()?.ConversationId ?? Guid.Empty,
+                  ConversationId = message.ConversationMessages.FirstOrDefault()?.ConversationId ?? Guid.Empty,
                   IsSeen = messageSeen != null
             };
 

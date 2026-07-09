@@ -28,9 +28,9 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
                         Detail = ex.Message,
                         Status = StatusCodes.Status404NotFound
                   },
-                  NotFoundException ex => new ProblemDetails
+                  Exception ex when ex is NotFoundException || ex is KeyNotFoundException => new ProblemDetails
                   {
-                        Title = "Resource Not Found!",
+                        Title = "Resource Not Found",
                         Detail = ex.Message,
                         Status = StatusCodes.Status404NotFound
                   },

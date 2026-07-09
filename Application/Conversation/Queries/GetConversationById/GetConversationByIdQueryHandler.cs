@@ -11,7 +11,7 @@ public class GetConversationByIdQueryHandler(IUnitOfWork unitOfWork) : IRequestH
             var conversations = await unitOfWork.ConversationRepository.FindAsync(
                          x => x.Id == request.ConversationId && x.DeletedDate == null,
                          cancellationToken,
-                         ["ConversationAdmins", "ConversationMessages"]
+                         ["ConversationAdmins", "ConversationMessages", "UserMessageSees"]
                    );
             var result = new ConversationResponse
             {

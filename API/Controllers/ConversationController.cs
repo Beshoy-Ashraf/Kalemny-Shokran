@@ -1,4 +1,6 @@
 using Application.Conversation.Command.CreateConversation;
+using Application.Conversation.Command.DeleteConversation;
+using Application.Conversation.Command.UpdateConversation;
 using Application.Conversation.Queries.GetConversationById;
 using Application.Conversation.Queries.GetConversations;
 using MediatR;
@@ -31,25 +33,25 @@ public class ConversationController(IMediator mediatR) : ControllerBase
 
             return CreatedAtAction(nameof(GetConversation), new { id = resultId }, command);
       }
-      // [HttpPut("{id:guid}")]
-      // public async Task<IActionResult> UpdateConversation([FromRoute] Guid id, [FromBody] UpdateConversationCommand command)
-      // {
-      //       if (id != command.Id)
-      //             return BadRequest("Id in URL does not match Id in the body.");
+      [HttpPut("{id:guid}")]
+      public async Task<IActionResult> UpdateConversation([FromRoute] Guid id, [FromBody] UpdateConversationCommand command)
+      {
+            if (id != command.ConversationId)
+                  return BadRequest("Id in URL does not match Id in the body.");
 
-      //       await mediatR.Send(command);
+            var result = await mediatR.Send(command);
 
-      //       return NoContent();
-      // }
-      // [HttpDelete("{id:guid}")]
-      // public async Task<IActionResult> DeleteConversation([FromRoute] Guid id)
-      // {
+            return Ok(result);
+      }
+      [HttpDelete("{id:guid}")]
+      public async Task<IActionResult> DeleteConversation([FromRoute] Guid id)
+      {
 
-      //       var command = new DeleteConversationCommand(id);
-      //       await mediatR.Send(command);
+            var command = new DeleteConversationCommand(id);
+            await mediatR.Send(command);
 
-      //       return NoContent();
-      // }
+            return NoContent();
+      }
 
 
 

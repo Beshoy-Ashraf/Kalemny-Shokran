@@ -10,7 +10,7 @@ public class GetConversationsQueryHandler(IUnitOfWork unitOfWork) : IRequestHand
       {
             var conversations = await unitOfWork.ConversationRepository.FindAllAsync(
                         x => x.DeletedDate == null, cancellationToken,
-                        ["ConversationAdmins", "ConversationMessages"]
+                        ["ConversationAdmins", "ConversationMessages", "UserConversations"]
                   );
 
             var ListOfConversations = new List<ConversationResponse>();
@@ -24,7 +24,9 @@ public class GetConversationsQueryHandler(IUnitOfWork unitOfWork) : IRequestHand
                         Description = conversation.Description,
                         ImageUrl = conversation.ProfilePictureUrl,
                         UsersId = [.. conversation.UserConversations.Select(x => x.UserId)],
-                        MessagesId = [.. conversation.ConversationMessages.Select(x => x.MessageId)],
+                        MessagesId = [.. conversation.ConversationMessages
+                              .Where(x => x.Message != null && x.Message.DeleteDate == default(DateTime))
+                              .Select(x => x.MessageId)],
                         AdminId = conversation.ConversationAdmins.FirstOrDefault()?.UserId ?? Guid.Empty
                   };
                   ListOfConversations.Add(conversationResponse);
