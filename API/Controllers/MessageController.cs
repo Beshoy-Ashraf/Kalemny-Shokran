@@ -10,7 +10,7 @@ namespace API.Controllers;
 public class MessageController(IMediator mediator) : ControllerBase
 {
 
-      // [HttpGet("{id:guid}")]
+      [HttpGet("{id:guid}")]
 
       public async Task<IActionResult> GetMessageById(Guid id, CancellationToken cancellationToken)
       {

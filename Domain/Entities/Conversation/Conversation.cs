@@ -14,7 +14,7 @@ public class Conversation(string title, string description, bool isGroup, string
       public string ProfilePictureUrl { get; private set; } = profilePictureUrl;
       public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
       public DateTime UpdatedDate { get; private set; } = DateTime.UtcNow;
-      public DateTime DeletedDate { get; private set; } = default;
+      public DateTime? DeletedDate { get; private set; } = default;
       public List<UserConversation> UserConversations { get; set; } = [];
       public List<ConversationAdmin> ConversationAdmins { get; set; } = [];
       public List<ConversationMessage> ConversationMessages { get; set; } = [];
