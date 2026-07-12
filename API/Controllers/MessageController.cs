@@ -3,6 +3,7 @@ using Application.Messages.Command.DeleteMessage;
 using Application.Messages.Command.UpdateMessage;
 using Application.Messages.Queries.GetMessageById;
 using Application.Messages.Queries.GetMessages;
+using Application.Messages.Queries.GetMessagesByConversationId;
 using Application.Messages.Queries.GetSpecificMessage;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -67,14 +68,13 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return NoContent();
       }
-      // [HttpGet("conversation/{conversationId:guid}")]
-      // public async Task<IActionResult> GetMessagesByConversationId(Guid conversationId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
-      // {
-      //       var query = new GetMessagesByConversationIdQuery(conversationId, pageNumber, pageSize);
-      //       var result = await mediator.Send(query, cancellationToken);
-
-      //       return Ok(result);
-      // }
+      [HttpGet("conversation/{conversationId:guid}")]
+      public async Task<IActionResult> GetMessagesByConversationId(Guid conversationId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+      {
+            var query = new GetMessagesByConversationIdQuery(conversationId, pageNumber, pageSize);
+            var result = await mediator.Send(query, cancellationToken);
+            return Ok(result);
+      }
       // [HttpPatch("{messageId:guid}/seen")]
       // public async Task<IActionResult> MarkMessageAsSeen(Guid messageId, [FromBody] Guid userId, CancellationToken cancellationToken)
       // {

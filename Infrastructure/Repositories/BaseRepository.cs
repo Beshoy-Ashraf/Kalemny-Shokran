@@ -28,6 +28,15 @@ public class BaseRepository<T>(AppDBContext appDBContext) : IBaseRepository<T> w
 
             return await query.Where(criteria).ToListAsync(cancellationToken);
       }
+      public async Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> criteria, int skip, int take, CancellationToken cancellationToken, string[]? includes = null)
+      {
+            IQueryable<T> query = _dbContext.Set<T>();
+            if (includes != null)
+                  foreach (var include in includes)
+                        query = query.Include(include);
+
+            return await query.Where(criteria).Skip(skip).Take(take).ToListAsync(cancellationToken);
+      }
 
       public async Task<T> FindAsync(Expression<Func<T, bool>> criteria, CancellationToken cancellationToken, string[]? includes = null)
       {

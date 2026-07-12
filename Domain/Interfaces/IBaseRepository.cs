@@ -11,6 +11,8 @@ public interface IBaseRepository<T> where T : class
       Task<T> UpdateAsync(T entity);
       void DeleteAsync(T entity, CancellationToken cancellationToken);
       Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> criteria, CancellationToken cancellationToken, string[]? includes = null);
+      Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> criteria, int skip, int take, CancellationToken cancellationToken, string[]? includes = null);
+
       Task<T> FindAsync(Expression<Func<T, bool>> criteria, CancellationToken cancellationToken, string[]? includes = null);
 
 
