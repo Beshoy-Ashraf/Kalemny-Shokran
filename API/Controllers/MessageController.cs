@@ -1,5 +1,6 @@
 using Application.Messages.Command.CreateMessage;
 using Application.Messages.Command.DeleteMessage;
+using Application.Messages.Command.MarkMessageAsSeen;
 using Application.Messages.Command.UpdateMessage;
 using Application.Messages.Queries.GetMessageById;
 using Application.Messages.Queries.GetMessages;
@@ -75,14 +76,14 @@ public class MessageController(IMediator mediator) : ControllerBase
             var result = await mediator.Send(query, cancellationToken);
             return Ok(result);
       }
-      // [HttpPatch("{messageId:guid}/seen")]
-      // public async Task<IActionResult> MarkMessageAsSeen(Guid messageId, [FromBody] Guid userId, CancellationToken cancellationToken)
-      // {
-      //       var command = new MarkMessageAsSeenCommand(messageId, userId);
-      //       await mediator.Send(command, cancellationToken);
+      [HttpPatch("{messageId:guid}/seen")]
+      public async Task<IActionResult> MarkMessageAsSeen(Guid messageId, [FromBody] Guid userId, CancellationToken cancellationToken)
+      {
+            var command = new MarkMessageAsSeenCommand(messageId, userId);
+            await mediator.Send(command, cancellationToken);
 
-      //       return NoContent();
-      // }
+            return NoContent();
+      }
       // [HttpGet("conversation/{conversationId:guid}/unread-count")]
       // public async Task<IActionResult> GetUnreadMessagesCount(Guid conversationId, [FromQuery] Guid userId, CancellationToken cancellationToken)
       // {
@@ -102,12 +103,5 @@ public class MessageController(IMediator mediator) : ControllerBase
 
       //       return Ok(result);
       // }
-      // [HttpDelete("{messageId:guid}")]
-      // public async Task<IActionResult> SoftDeleteMessage(Guid messageId, CancellationToken cancellationToken)
-      // {
-      //       var command = new SoftDeleteMessageCommand(messageId);
-      //       await mediator.Send(command, cancellationToken);
 
-      //       return NoContent();
-      // }
 }
