@@ -24,6 +24,8 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
             return await _dbContext.Conversations
                 .Where(c => c.UserConversations.Any(uc => uc.UserId == userId))
                 .OrderByDescending(c => c.ConversationMessages.Max(cm => (DateTime?)cm.Message!.SendDate))
+                .Include(c => c.UserConversations)
+                .Include(c => c.ConversationAdmins)
                 .Include(c => c.ConversationMessages
                     .OrderByDescending(cm => cm.Message!.SendDate)
                     .Take(1))

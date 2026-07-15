@@ -6,6 +6,7 @@ using Application.Users.Queries.GetUsers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Application.Conversation.Queries.GetUserInbox;
 
 namespace API.Controllers;
 
@@ -49,6 +50,14 @@ public class UserController(IMediator mediator) : ControllerBase
             return Ok(result);
 
       }
+      [HttpGet("GetUserConversations/{userId:guid}")]
+      public async Task<IActionResult> GetUserConversations([FromRoute] Guid userId)
+      {
+            var query = new GetUserInboxQuery(userId);
+            var result = await mediator.Send(query);
+            return Ok(result);
+      }
 
 
 }
+
