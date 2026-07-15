@@ -5,6 +5,7 @@ using Application.Messages.Command.UpdateMessage;
 using Application.Messages.Queries.GetMessageById;
 using Application.Messages.Queries.GetMessages;
 using Application.Messages.Queries.GetMessagesByConversationId;
+using Application.Messages.Queries.GetMessageWithSeenReceipts;
 using Application.Messages.Queries.GetSpecificMessage;
 using Application.Messages.Queries.GetUnreadMessagesCount;
 using MediatR;
@@ -78,7 +79,7 @@ public class MessageController(IMediator mediator) : ControllerBase
             return Ok(result);
       }
       [HttpPatch("{messageId:guid}/seen")]
-      public async Task<IActionResult> MarkMessageAsSeen(Guid messageId, [FromBody] Guid userId, CancellationToken cancellationToken)
+      public async Task<IActionResult> MarkMessageAsSeen(Guid messageId, [FromQuery] Guid userId, CancellationToken cancellationToken)
       {
             var command = new MarkMessageAsSeenCommand(messageId, userId);
             await mediator.Send(command, cancellationToken);
@@ -93,16 +94,16 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return Ok(result);
       }
-      // [HttpGet("{messageId:guid}/receipts")]
-      // public async Task<IActionResult> GetMessageWithSeenReceipts(Guid messageId, CancellationToken cancellationToken)
-      // {
-      //       var query = new GetMessageWithSeenReceiptsQuery(messageId);
-      //       var result = await mediator.Send(query, cancellationToken);
+      [HttpGet("{messageId:guid}/receipts")]
+      public async Task<IActionResult> GetMessageWithSeenReceipts(Guid messageId, CancellationToken cancellationToken)
+      {
+            var query = new GetMessageWithSeenReceiptsQuery(messageId);
+            var result = await mediator.Send(query, cancellationToken);
 
-      //       if (result == null)
-      //             return NotFound();
+            if (result == null)
+                  return NotFound();
 
-      //       return Ok(result);
-      // }
+            return Ok(result);
+      }
 
 }
