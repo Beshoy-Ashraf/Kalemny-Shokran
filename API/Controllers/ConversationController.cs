@@ -2,6 +2,7 @@ using Application.Conversation.Command.CreateConversation;
 using Application.Conversation.Command.DeleteConversation;
 using Application.Conversation.Command.UpdateConversation;
 using Application.Conversation.Queries.GetConversationById;
+using Application.Conversation.Queries.GetConversationMembers;
 using Application.Conversation.Queries.GetConversations;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,13 @@ public class ConversationController(IMediator mediatR) : ControllerBase
             await mediatR.Send(command);
 
             return NoContent();
+      }
+      [HttpGet("{conversationId:guid}/members")]
+      public async Task<IActionResult> GetConversationMembers([FromRoute] Guid conversationId)
+      {
+            var query = new GetConversationMembersQuery(conversationId);
+            var result = await mediatR.Send(query);
+            return Ok(result);
       }
 
 

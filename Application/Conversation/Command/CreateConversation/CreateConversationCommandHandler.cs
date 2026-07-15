@@ -27,6 +27,10 @@ public class CreateConversationCommandHandler(IUnitOfWork unitOfWork) : IRequest
                   conversation.UserConversations.Add(userConversation);
                   userConversations.Add(userConversation);
             }
+
+            var addCreatorToUsersList = new UserConversation(request.CreatorId, conversation.Id);
+            conversation.UserConversations.Add(addCreatorToUsersList);
+            userConversations.Add(addCreatorToUsersList);
             conversation.UserConversations = userConversations;
 
 
