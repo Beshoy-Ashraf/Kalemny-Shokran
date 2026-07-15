@@ -6,6 +6,7 @@ using Application.Messages.Queries.GetMessageById;
 using Application.Messages.Queries.GetMessages;
 using Application.Messages.Queries.GetMessagesByConversationId;
 using Application.Messages.Queries.GetSpecificMessage;
+using Application.Messages.Queries.GetUnreadMessagesCount;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -84,14 +85,14 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return NoContent();
       }
-      // [HttpGet("conversation/{conversationId:guid}/unread-count")]
-      // public async Task<IActionResult> GetUnreadMessagesCount(Guid conversationId, [FromQuery] Guid userId, CancellationToken cancellationToken)
-      // {
-      //       var query = new GetUnreadMessagesCountQuery(conversationId, userId);
-      //       var result = await mediator.Send(query, cancellationToken);
+      [HttpGet("conversation/{conversationId:guid}/unread-count")]
+      public async Task<IActionResult> GetUnreadMessagesCount(Guid conversationId, [FromQuery] Guid userId, CancellationToken cancellationToken)
+      {
+            var query = new GetUnreadMessagesCountQuery(conversationId, userId);
+            var result = await mediator.Send(query, cancellationToken);
 
-      //       return Ok(result);
-      // }
+            return Ok(result);
+      }
       // [HttpGet("{messageId:guid}/receipts")]
       // public async Task<IActionResult> GetMessageWithSeenReceipts(Guid messageId, CancellationToken cancellationToken)
       // {
