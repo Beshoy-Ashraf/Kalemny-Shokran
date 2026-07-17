@@ -46,6 +46,11 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
                   .Where(c => c.UserConversations.Count == 2 &&
                               c.UserConversations.Any(uc => uc.UserId == user1Id) &&
                               c.UserConversations.Any(uc => uc.UserId == user2Id))
+                              .Include(c => c.UserConversations)
+                              .Include(c => c.ConversationAdmins)
+                              .Include(c => c.ConversationMessages)
+                              .ThenInclude(cm => cm.Message)
+                              .Include(c => c.ConversationNotifications)
                   .FirstOrDefaultAsync(cancellationToken);
       }
       public async Task<IEnumerable<Conversation>> GetUserConversationsAsync(Guid userId, CancellationToken cancellationToken)
