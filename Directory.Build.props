@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <AnalysisLevel>latest</AnalysisLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    
   </PropertyGroup>
   
 </Project>
