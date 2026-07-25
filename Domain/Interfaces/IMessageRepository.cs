@@ -6,6 +6,8 @@ public interface IMessageRepository : IBaseRepository<Message>
 {
       Task<IEnumerable<Message>> GetMessagesByConversationIdAsync(Guid conversationId, int pageNumber, int pageSize, CancellationToken cancellationToken);
 
+      Task<IEnumerable<Message>> GetMessagesSinceAsync(Guid conversationId, Guid userId, DateTimeOffset since, int take, CancellationToken cancellationToken);
+
       Task MarkMessageAsSeenAsync(Guid messageId, Guid userId, CancellationToken cancellationToken);
 
       Task<int> GetUnreadMessagesCountAsync(Guid conversationId, Guid userId, CancellationToken cancellationToken);

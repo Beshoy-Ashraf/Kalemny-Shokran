@@ -101,4 +101,10 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
                                                            (uc.User!.DisplayName.Contains(searchTerm) || uc.User.Username.Contains(searchTerm))))
                   .ToListAsync(cancellationToken);
       }
+      public async Task AddMessageToConversationAsync(Conversation conversation, Message message, CancellationToken cancellationToken)
+      {
+            var conversationMessage = new ConversationMessage(conversation.Id, message.Id);
+
+            await _dbContext.ConversationMessages.AddAsync(conversationMessage, cancellationToken);
+      }
 }

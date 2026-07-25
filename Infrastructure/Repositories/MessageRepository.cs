@@ -21,6 +21,21 @@ public class MessageRepository(AppDBContext appDBContext) : BaseRepository<Messa
 
             return result;
       }
+      public async Task<IEnumerable<Message>> GetMessagesSinceAsync(Guid conversationId, Guid userId, DateTimeOffset since, int take, CancellationToken cancellationToken = default)
+      {
+            var sinceUtc = since.UtcDateTime;
+
+            return await _dbContext.Messages
+                .Include(m => m.ConversationMessages)
+                .Where(m => m.ConversationMessages.Any(cm => cm.ConversationId == conversationId && cm.MessageId == m.Id)
+                         && m.DeleteDate == default
+                         && m.SendDate >= sinceUtc)
+                .Where(m => m.UserSenderId != userId || m.SendDate >= sinceUtc)
+                .OrderBy(m => m.SendDate)
+                .Take(take)
+                .ToListAsync(cancellationToken);
+      }
+
       public async Task MarkMessageAsSeenAsync(Guid messageId, Guid userId, CancellationToken cancellationToken = default)
       {
             var hasSeen = await _dbContext.UserMessageSeens

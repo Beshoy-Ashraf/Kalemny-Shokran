@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Conversation.Command.UpdateConversation;
 
-public class UpdateConversationCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdateConversationCommand, Guid>
+public class UpdateConversationCommandHandler(IUnitOfWork unitOfWork, IChatNotificationService notificationService) : IRequestHandler<UpdateConversationCommand, Guid>
 {
       public async Task<Guid> Handle(UpdateConversationCommand request, CancellationToken cancellationToken)
       {
@@ -43,6 +43,8 @@ public class UpdateConversationCommandHandler(IUnitOfWork unitOfWork) : IRequest
 
             await unitOfWork.ConversationRepository.UpdateAsync(conversation);
             unitOfWork.Complete();
+            var userIds = conversation.UserConversations.Select(uc => uc.UserId).ToList();
+            await notificationService.ConversationUpdatedNotificationAsync(conversation.Id, userIds);
 
             return conversation.Id;
 

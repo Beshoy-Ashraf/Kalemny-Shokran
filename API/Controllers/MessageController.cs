@@ -5,6 +5,7 @@ using Application.Messages.Command.UpdateMessage;
 using Application.Messages.Queries.GetMessageById;
 using Application.Messages.Queries.GetMessages;
 using Application.Messages.Queries.GetMessagesByConversationId;
+using Application.Messages.Queries.GetMessagesSince;
 using Application.Messages.Queries.GetMessageWithSeenReceipts;
 using Application.Messages.Queries.GetSpecificMessage;
 using Application.Messages.Queries.GetUnreadMessagesCount;
@@ -94,6 +95,16 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return Ok(result);
       }
+
+      [HttpGet("conversation/{conversationId:guid}/since")]
+      public async Task<IActionResult> GetMessagesSince(Guid conversationId, [FromQuery] Guid userId, [FromQuery] DateTimeOffset since, [FromQuery] int take = 100, CancellationToken cancellationToken = default)
+      {
+            var query = new GetMessagesSinceQuery(conversationId, userId, since, take);
+            var result = await mediator.Send(query, cancellationToken);
+
+            return Ok(result);
+      }
+
       [HttpGet("{messageId:guid}/receipts")]
       public async Task<IActionResult> GetMessageWithSeenReceipts(Guid messageId, CancellationToken cancellationToken)
       {

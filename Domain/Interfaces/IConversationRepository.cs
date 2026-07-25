@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Entities.Conversation;
+using Domain.Entities.Message;
 
 namespace Domain.Interfaces;
 
@@ -12,6 +13,7 @@ public interface IConversationRepository : IBaseRepository<Conversation>
 
       Task<Conversation?> GetDirectConversationAsync(Guid user1Id, Guid user2Id, CancellationToken cancellationToken);
       Task<bool> IsUserInConversationAsync(Guid conversationId, Guid userId, CancellationToken cancellationToken);
+      Task AddMessageToConversationAsync(Conversation conversation, Message message, CancellationToken cancellationToken);
 
       Task<bool> IsUserAdminInConversationAsync(Guid conversationId, Guid userId, CancellationToken cancellationToken);
       Task<IEnumerable<Conversation>> GetUserConversationsPagedAsync(Guid userId, int pageNumber, int pageSize, CancellationToken cancellationToken);

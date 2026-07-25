@@ -3,12 +3,8 @@
     <ProjectReference Include="..\Domain\Domain.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MediatR" Version="14.1.0"/>
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="9.0.0"/>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
   </ItemGroup>
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+  
 </Project>
