@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Application.Messages.Command.CreateMessage;
 
-public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork, IChatNotificationService notificationService) : IRequestHandler<CreateMessageCommand, Guid>
+public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateMessageCommand, Guid>
 {
       public async Task<Guid> Handle(CreateMessageCommand request, CancellationToken cancellationToken)
       {
@@ -20,19 +20,13 @@ public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork, IChatNot
             message.User = user;
             await unitOfWork.MessageRepository.AddAsync(message, cancellationToken);
             unitOfWork.Complete();
-            message.ConversationMessages.Add(new ConversationMessage( message.Id, conversation.Id));
+            message.ConversationMessages.Add(new ConversationMessage(message.Id, conversation.Id));
             unitOfWork.Complete();
 
 
             var messageResponse = new MessageResponse(message);
 
-            foreach (var member in conversationMember)
-            {
-                  if (member.Id != request.UserSenderId)
-                  {
-                        await notificationService.SendMessageToUserAsync(member.Id, messageResponse);
-                  }
-            }
+
 
             return message.Id;
       }

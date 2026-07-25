@@ -9,8 +9,8 @@ public class UserRepository(AppDBContext appDBContext) : BaseRepository<User>(ap
 {
       private readonly AppDBContext _appDBContext = appDBContext;
 
-      public async Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken)
+      public async Task<User> GetUserByEmail(string email, CancellationToken cancellationToken)
       {
-            return await _appDBContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+            return await _appDBContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken) ?? throw new Exception($"User with email {email} not found.");
       }
 }

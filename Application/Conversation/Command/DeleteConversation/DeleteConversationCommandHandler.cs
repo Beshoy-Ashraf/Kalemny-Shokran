@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Application.Conversation.Command.DeleteConversation;
 
-public class DeleteConversationCommandHandler(IUnitOfWork unitOfWork, IChatNotificationService notificationService) : IRequestHandler<DeleteConversationCommand, bool>
+public class DeleteConversationCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteConversationCommand, bool>
 {
       public async Task<bool> Handle(DeleteConversationCommand request, CancellationToken cancellationToken)
       {
@@ -14,7 +14,6 @@ public class DeleteConversationCommandHandler(IUnitOfWork unitOfWork, IChatNotif
             var userIds = conversation.UserConversations.Select(uc => uc.UserId).ToList();
 
             var members = await unitOfWork.ConversationRepository.GetConversationMembersAsync(request.ConversationId, cancellationToken);
-            await notificationService.ConversationDeletedNotificationAsync(request.ConversationId, members.Select(m => m.Id));
             return true;
       }
 }

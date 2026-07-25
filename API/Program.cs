@@ -1,19 +1,12 @@
 using Application;
-using Application.Common.Interfaces;
-using API;
 using API.Exceptions;
-using API.Hubs;
 using Infrastructure;
-using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddApplicationServices();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(IAssemblyMarker).Assembly));
 builder.Services.AddSwaggerGen(opt =>
@@ -55,9 +48,8 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddSignalR();
 builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddScoped<IRealtimeNotificationSender, RealtimeNotificationSender>();
+builder.Services.AddSignalR();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -106,7 +98,6 @@ app.UseSwaggerUI(c =>
 app.UseCors("YourCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapHub<ChatHub>("/hubs/chat");
 app.MapControllers();
 
 app.UseExceptionHandler();
