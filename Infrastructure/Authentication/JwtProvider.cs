@@ -6,12 +6,14 @@ using Application.Common.Interfaces;
 using Application.Users.Command.Common;
 using Domain.Entities;
 using Domain.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure.Authentication;
 
-public class JwtProvider : IJwtProvider
+public class JwtProvider(IConfiguration configuration) : IJwtProvider
 {
+
     public async Task<TokenResponse> RefreshTokenAsync(string token, IUnitOfWork unitOfWork, CancellationToken cancellationToken)
     {
 
@@ -92,7 +94,7 @@ public class JwtProvider : IJwtProvider
 
     public Task<string> GenerateToken(User user)
     {
-        var secretKey = "YourSuperSecretKeyThatIsLongEnoughToSecureTheApi123!";
+        var secretKey = configuration["JWT_SECRET_KEY"] ?? "YourSuperSecretKeyThatIsLongEnough";
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 

@@ -13,11 +13,6 @@ public static class DependencyInjection
 {
       public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
       {
-            // Register your infrastructure services here
-            // For example:
-            // services.AddScoped<IYourRepository, YourRepository>();
-            // services.AddDbContext<YourDbContext>(options =>
-            //     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));services.AddDbContext<AppDBContext>(options =>
             services.AddDbContext<AppDBContext>(options =>
                     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<IUnitOfWork, UnitOfWork>();

@@ -62,7 +62,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = "KalemnyShokranApi",
             ValidAudience = "KalemnyShokranClient",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("YourSuperSecretKeyThatIsLongEnoughToSecureTheApi123!"))
+                Encoding.UTF8.GetBytes("YourSuperSecretKeyThatIsLongEnoughToSecureTheApi123"))
         };
         options.Events = new JwtBearerEvents
         {
