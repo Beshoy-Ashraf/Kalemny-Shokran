@@ -1197,9 +1197,18 @@
                         console.log('[SignalR] Reconnecting...', error);
                         showToast('Reconnecting...');
                   });
-                  connection.onreconnected((connectionId) => {
+                  connection.onreconnected(async (connectionId) => {
                         console.log('[SignalR] Reconnected:', connectionId);
                         showToast('Reconnected!');
+                        // The old connectionId's group memberships are gone after a reconnect —
+                        // rejoin the active conversation's group so messages keep arriving.
+                        if (activeConversationId) {
+                              try {
+                                    await connection.invoke('JoinConversation', activeConversationId);
+                              } catch (err) {
+                                    console.error('Failed to rejoin conversation group after reconnect:', err);
+                              }
+                        }
                   });
                   connection.onclose((error) => {
                         console.log('[SignalR] Connection closed:', error);
@@ -1331,6 +1340,18 @@
             async function selectConversation(convId) {
                   if (!convId) return;
 
+                  // Leave the previously active conversation's SignalR group before
+                  // joining the new one, so we don't keep receiving pushes for chats
+                  // we're no longer viewing.
+                  if (activeConversationId && activeConversationId !== convId &&
+                        connection?.state === signalR.HubConnectionState.Connected) {
+                        try {
+                              await connection.invoke('LeaveConversation', activeConversationId);
+                        } catch (err) {
+                              console.error('Failed to leave previous conversation group:', err);
+                        }
+                  }
+
                   // Clear unread for this conversation
                   unreadCounts[convId] = 0;
                   updateConversationUnreadBadge(convId);
@@ -1341,6 +1362,18 @@
                   if (activeItem) activeItem.classList.add('active');
 
                   activeConversationId = convId;
+
+                  // Join this conversation's SignalR group — without this, ReceiveMessage
+                  // will never fire for messages sent here (the server only broadcasts
+                  // to connections that previously called JoinConversation for this id).
+                  if (connection?.state === signalR.HubConnectionState.Connected) {
+                        try {
+                              await connection.invoke('JoinConversation', convId);
+                        } catch (err) {
+                              console.error('Failed to join conversation group:', err);
+                              showToast('Could not subscribe to live updates for this chat');
+                        }
+                  }
 
                   // Get conversation data
                   const conv = conversationsMap[convId];

@@ -1,3 +1,4 @@
+using Application.Common.Interfaces;
 using Application.Common.NotFoundException;
 using Application.Messages.Queries.Common;
 using Domain.Entities.Message;
@@ -6,7 +7,7 @@ using MediatR;
 
 namespace Application.Messages.Command.CreateMessage;
 
-public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateMessageCommand, Guid>
+public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork, IChatNotifier chatNotifier) : IRequestHandler<CreateMessageCommand, Guid>
 {
       public async Task<Guid> Handle(CreateMessageCommand request, CancellationToken cancellationToken)
       {
@@ -25,6 +26,8 @@ public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork) : IReque
 
 
             var messageResponse = new MessageResponse(message);
+            await chatNotifier.NotifyNewMessageAsync(conversation.Id, messageResponse, cancellationToken);
+            unitOfWork.Complete();
 
 
 

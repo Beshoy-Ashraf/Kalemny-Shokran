@@ -99,6 +99,6 @@ app.UseCors("YourCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
+app.MapHub<Infrastructure.Realtime.ChatHub>("/hubs/chat");
 app.UseExceptionHandler();
 app.Run();

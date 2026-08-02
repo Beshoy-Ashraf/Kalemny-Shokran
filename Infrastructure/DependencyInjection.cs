@@ -2,6 +2,7 @@ using Application.Common.Interfaces;
 using Domain.Interfaces;
 using Infrastructure.Authentication;
 using Infrastructure.Data;
+using Infrastructure.Realtime;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,8 @@ public static class DependencyInjection
                     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IJwtProvider, JwtProvider>();
+            services.AddSignalR();
+            services.AddScoped<IChatNotifier, SignalRChatNotifier>();
             return services;
       }
 }
