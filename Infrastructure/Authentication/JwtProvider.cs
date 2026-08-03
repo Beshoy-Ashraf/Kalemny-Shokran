@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure.Authentication;
 
-public class JwtProvider(IConfiguration configuration) : IJwtProvider
+public class JwtProvider : IJwtProvider
 {
 
     public async Task<TokenResponse> RefreshTokenAsync(string token, IUnitOfWork unitOfWork, CancellationToken cancellationToken)
@@ -94,7 +94,7 @@ public class JwtProvider(IConfiguration configuration) : IJwtProvider
 
     public Task<string> GenerateToken(User user)
     {
-        var secretKey = configuration["JWT_SECRET_KEY"] ?? "YourSuperSecretKeyThatIsLongEnough";
+        var secretKey = "YourSuperSecretKeyThatIsLongEnoughToSecureTheApi123";
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 

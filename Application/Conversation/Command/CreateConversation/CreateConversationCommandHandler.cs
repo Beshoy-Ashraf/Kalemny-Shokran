@@ -1,3 +1,5 @@
+using Application.Common.Interfaces;
+using Application.Conversation.Queries.Common;
 using Domain.Entities;
 using Domain.Entities.Conversation;
 using Domain.Entities.Message;
@@ -7,7 +9,7 @@ using MediatR;
 
 namespace Application.Conversation.Command.CreateConversation;
 
-public class CreateConversationCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateConversationCommand, Guid>
+public class CreateConversationCommandHandler(IUnitOfWork unitOfWork, IChatNotifier chatNotifier) : IRequestHandler<CreateConversationCommand, Guid>
 
 {
       public async Task<Guid> Handle(CreateConversationCommand request, CancellationToken cancellationToken)
@@ -42,6 +44,21 @@ public class CreateConversationCommandHandler(IUnitOfWork unitOfWork) : IRequest
             unitOfWork.Complete();
 
             var userIds = conversation.UserConversations.Select(uc => uc.UserId).ToList();
+
+
+            var memberUserIds = conversation.UserConversations.Select(uc => uc.UserId).ToList();
+            var conversationResponse = new ConversationResponse
+            {
+                  Id = conversation.Id,
+                  AdminId = request.CreatorId,
+                  Title = conversation.Title,
+                  Description = conversation.Description,
+                  ImageUrl = conversation.ProfilePictureUrl,
+                  UsersId = memberUserIds,
+                  MessagesId = conversation.ConversationMessages.Select(cm => cm.MessageId).ToList(),
+            };
+
+            await chatNotifier.NotifyConversationCreatedAsync(memberUserIds, conversationResponse, cancellationToken);
 
             return conversation.Id;
       }
