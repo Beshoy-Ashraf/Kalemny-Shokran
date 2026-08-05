@@ -13,6 +13,7 @@ public class GetUnreadMessagesCountQueryHandler(IUnitOfWork unitOfWork) : IReque
             cancellationToken
         );
 
+
             return unreadCount;
       }
 }

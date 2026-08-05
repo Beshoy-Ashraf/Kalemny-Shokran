@@ -29,4 +29,10 @@ public class SignalRChatNotifier(IHubContext<ChatHub> hubContext) : IChatNotifie
                 .Groups(personalGroupNames)
                 .SendAsync("ConversationCreated", conversationResponse, cancellationToken);
       }
+      public async Task NotifyUnreadCountChangedAsync(Guid userId, Guid conversationId, int unreadCount, CancellationToken cancellationToken)
+      {
+            await hubContext.Clients
+                .Group($"user:{userId}")
+                .SendAsync("UnreadCountChanged", conversationId, unreadCount, cancellationToken);
+      }
 }

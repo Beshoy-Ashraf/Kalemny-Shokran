@@ -1,13 +1,14 @@
 using Application.Common.Interfaces;
 using Application.Common.NotFoundException;
 using Application.Messages.Queries.Common;
+using Application.Messages.Queries.GetUnreadMessagesCount;
 using Domain.Entities.Message;
 using Domain.Interfaces;
 using MediatR;
 
 namespace Application.Messages.Command.CreateMessage;
 
-public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork, IChatNotifier chatNotifier) : IRequestHandler<CreateMessageCommand, Guid>
+public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork, IChatNotifier chatNotifier, IMediator mediator) : IRequestHandler<CreateMessageCommand, Guid>
 {
       public async Task<Guid> Handle(CreateMessageCommand request, CancellationToken cancellationToken)
       {
@@ -29,6 +30,18 @@ public sealed class CreateMessageCommandHandler(IUnitOfWork unitOfWork, IChatNot
             await chatNotifier.NotifyNewMessageAsync(conversation.Id, messageResponse, cancellationToken);
             unitOfWork.Complete();
 
+            var recipients = conversation.UserConversations
+                       .Where(uc => uc.UserId != request.UserSenderId)
+                       .Select(uc => uc.UserId);
+
+            foreach (var recipientId in recipients)
+            {
+                  var unreadCount = await mediator.Send(
+                      new GetUnreadMessagesCountQuery(conversation.Id, recipientId), cancellationToken);
+
+                  await chatNotifier.NotifyUnreadCountChangedAsync(
+                      recipientId, conversation.Id, unreadCount, cancellationToken);
+            }
 
 
             return message.Id;

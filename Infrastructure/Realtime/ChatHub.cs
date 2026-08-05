@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Application.Messages.Queries.Common;
 using Application.Messages.Queries.GetMessagesSince;
+using Application.Messages.Queries.GetUnreadMessagesCount;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -52,5 +53,12 @@ public class ChatHub(IMediator mediator) : Hub
                   throw new HubException("You are not a participant of this conversation.");
             }
       }
+      public async Task<int> GetUnreadMessagesCount(Guid conversationId)
+      {
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                  throw new HubException("Not authenticated.");
 
+            return await mediator.Send(new GetUnreadMessagesCountQuery(conversationId, Guid.Parse(userId)));
+      }
 }
