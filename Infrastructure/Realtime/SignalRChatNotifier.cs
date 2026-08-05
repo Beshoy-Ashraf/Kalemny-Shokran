@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Realtime;
 
-public class SignalRChatNotifier(IHubContext<ChatHub> hubContext, ILogger<SignalRChatNotifier> logger) : IChatNotifier
+public class SignalRChatNotifier(IHubContext<ChatHub> hubContext) : IChatNotifier
 {
       public async Task NotifyNewMessageAsync(Guid conversationId, object message, CancellationToken cancellationToken)
       {
@@ -24,10 +24,6 @@ public class SignalRChatNotifier(IHubContext<ChatHub> hubContext, ILogger<Signal
       {
             var ids = memberUserIds.ToArray();
             var personalGroupNames = ids.Select(userId => $"user:{userId}").ToArray();
-
-            logger.LogInformation(
-                "Broadcasting ConversationCreated {ConversationId} to groups: {Groups}",
-                conversationResponse.Id, string.Join(", ", personalGroupNames));
 
             await hubContext.Clients
                 .Groups(personalGroupNames)

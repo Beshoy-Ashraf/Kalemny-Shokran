@@ -20,4 +20,5 @@ public interface IConversationRepository : IBaseRepository<Conversation>
       Task<IEnumerable<Conversation>> SearchUserConversationsAsync(Guid userId, string searchTerm, CancellationToken cancellationToken);
       Task<IEnumerable<User>> GetConversationMembersAsync(Guid conversationId, CancellationToken cancellationToken);
       Task<IEnumerable<Conversation>> GetUserInboxAsync(Guid userId, CancellationToken cancellationToken);
+
 }

@@ -21,7 +21,7 @@ public class MessageRepository(AppDBContext appDBContext) : BaseRepository<Messa
 
             return result;
       }
-      public async Task<IEnumerable<Message>> GetMessagesSinceAsync(Guid conversationId, Guid userId, DateTimeOffset since, int take, CancellationToken cancellationToken = default)
+      public async Task<IEnumerable<Message>> GetMessagesSinceAsync(Guid conversationId, Guid userId, DateTimeOffset since, CancellationToken cancellationToken = default)
       {
             var sinceUtc = since.UtcDateTime;
 
@@ -32,7 +32,6 @@ public class MessageRepository(AppDBContext appDBContext) : BaseRepository<Messa
                          && m.SendDate >= sinceUtc)
                 .Where(m => m.UserSenderId != userId || m.SendDate >= sinceUtc)
                 .OrderBy(m => m.SendDate)
-                .Take(take)
                 .ToListAsync(cancellationToken);
       }
 
