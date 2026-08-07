@@ -13,16 +13,16 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
       {
             var result = await _dbContext.Users
             .Include(u => u.UserConversations)
-            .Where(u => u.UserConversations.Any(ui => ui.ConversationId == conversationId && u.Id == ui.UserId)
+            .Where(u => u.UserConversations.Any(ui => ui.ConversationId == conversationId && u.Id == ui.UserId
              && u.DeleteDate == default
-            )
+            ))
             .ToListAsync(cancellationToken);
             return result;
       }
       public async Task<IEnumerable<Conversation>> GetUserInboxAsync(Guid userId, CancellationToken cancellationToken)
       {
             return await _dbContext.Conversations
-                .Where(c => c.UserConversations.Any(uc => uc.UserId == userId))
+                .Where(c => c.UserConversations.Any(uc => uc.UserId == userId) && c.DeletedDate == default)
                 .OrderByDescending(c => c.ConversationMessages.Max(cm => (DateTime?)cm.Message!.SendDate))
                 .Include(c => c.UserConversations)
                 .Include(c => c.ConversationAdmins)
@@ -38,6 +38,7 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
                   .Include(c => c.UserConversations)
                   .Include(c => c.ConversationAdmins)
                   .Include(c => c.ConversationNotifications)
+                  .Where(c => c.DeletedDate == default)
                   .FirstOrDefaultAsync(c => c.Id == conversationId, cancellationToken);
       }
       public async Task<Conversation?> GetDirectConversationAsync(Guid user1Id, Guid user2Id, CancellationToken cancellationToken)
@@ -56,14 +57,14 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
       public async Task<IEnumerable<Conversation>> GetUserConversationsAsync(Guid userId, CancellationToken cancellationToken)
       {
             return await _dbContext.Conversations
-                  .Where(c => c.UserConversations.Any(uc => uc.UserId == userId))
+                  .Where(c => c.UserConversations.Any(uc => uc.UserId == userId) && c.DeletedDate == default)
                   .Include(c => c.UserConversations)
                   .ToListAsync(cancellationToken);
       }
       public async Task<IEnumerable<Conversation>> GetUserConversationsPagedAsync(Guid userId, int pageNumber, int pageSize, CancellationToken cancellationToken)
       {
             return await _dbContext.Conversations
-                  .Where(c => c.UserConversations.Any(uc => uc.UserId == userId))
+                  .Where(c => c.UserConversations.Any(uc => uc.UserId == userId) && c.DeletedDate == default)
                   .OrderByDescending(c => c.Id)
                   .Skip((pageNumber - 1) * pageSize)
                   .Take(pageSize)
@@ -74,21 +75,21 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
             return await _dbContext.Conversations
                   .AnyAsync(c => c.UserConversations.Count == 2 &&
                                  c.UserConversations.Any(uc => uc.UserId == user1Id) &&
-                                 c.UserConversations.Any(uc => uc.UserId == user2Id),
+                                 c.UserConversations.Any(uc => uc.UserId == user2Id) && c.DeletedDate == default,
                             cancellationToken);
       }
       public async Task<bool> IsUserAdminInConversationAsync(Guid conversationId, Guid userId, CancellationToken cancellationToken)
       {
             return await _dbContext.Conversations
                   .AnyAsync(c => c.Id == conversationId &&
-                                 c.ConversationAdmins.Any(ca => ca.UserId == userId),
+                                 c.ConversationAdmins.Any(ca => ca.UserId == userId) && c.DeletedDate == default,
                             cancellationToken);
       }
       public async Task<bool> IsUserInConversationAsync(Guid conversationId, Guid userId, CancellationToken cancellationToken)
       {
             return await _dbContext.Conversations
                   .AnyAsync(c => c.Id == conversationId &&
-                                 c.UserConversations.Any(uc => uc.UserId == userId),
+                                 c.UserConversations.Any(uc => uc.UserId == userId) && c.DeletedDate == default,
                             cancellationToken);
       }
       public async Task<IEnumerable<Conversation>> SearchUserConversationsAsync(Guid userId, string searchTerm, CancellationToken cancellationToken = default)
@@ -96,7 +97,7 @@ public class ConversationRepository(AppDBContext appDBContext) : BaseRepository<
             return await _dbContext.Conversations
                   .Include(c => c.UserConversations)
                         .ThenInclude(uc => uc.User)
-                  .Where(c => c.UserConversations.Any(uc => uc.UserId == userId))
+                  .Where(c => c.UserConversations.Any(uc => uc.UserId == userId) && c.DeletedDate == default)
                   .Where(c => c.UserConversations.Any(uc => uc.UserId != userId &&
                                                            (uc.User!.DisplayName.Contains(searchTerm) || uc.User.Username.Contains(searchTerm))))
                   .ToListAsync(cancellationToken);

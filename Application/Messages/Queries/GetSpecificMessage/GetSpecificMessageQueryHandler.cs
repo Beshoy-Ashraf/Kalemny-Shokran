@@ -13,7 +13,7 @@ public class GetSpecificMessageQueryHandler(IUnitOfWork unitOfWork) : IRequestHa
             foreach (var message in messages)
             {
                   if (message.Content.Contains(request.SearchKeyword))
-                        ListOfMessages.Add(new MessageResponse(message));
+                        ListOfMessages.Add(new MessageResponse(message, message.ConversationMessages.FirstOrDefault()?.ConversationId ?? Guid.Empty));
             }
             unitOfWork.Complete();
             return ListOfMessages;

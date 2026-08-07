@@ -17,6 +17,6 @@ public sealed class GetMessagesSinceQueryHandler(IUnitOfWork unitOfWork) : IRequ
 
             var messages = await unitOfWork.MessageRepository.GetMessagesSinceAsync(request.ConversationId, request.UserId, request.Since, cancellationToken);
 
-            return messages.Select(message => new MessageResponse(message)).ToList();
+            return messages.Select(message => new MessageResponse(message, request.ConversationId)).ToList();
       }
 }

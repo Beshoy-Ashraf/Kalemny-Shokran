@@ -2,1824 +2,1509 @@
 <html lang="en">
 
 <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>KalemnyShokran - Chat</title>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Signal•R — Chat Test Client</title>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
       <style>
-            /* Reset & Base Styles */
+            /* ============================================================
+     DESIGN TOKENS
+     A dev/debug chat client, not a marketing page — the signature
+     idea is literal: connection state reads as a "signal strength"
+     indicator, since this is SignalR. Everything else stays quiet
+     and functional so the actual chat data is legible.
+     ============================================================ */
+            :root {
+                  --bg: #0B0D10;
+                  --surface: #14171C;
+                  --surface-raised: #1B1F26;
+                  --border: #262B33;
+                  --text: #E7E9EC;
+                  --text-muted: #8A8F98;
+                  --text-faint: #565C66;
+                  --accent: #4DE8C0;
+                  /* live / connected signal color */
+                  --accent-dim: #2A6E5E;
+                  --warn: #FF6B4A;
+                  /* unread / alert coral */
+                  --danger: #FF4D6A;
+                  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+                  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+                  --radius: 10px;
+            }
+
             * {
                   box-sizing: border-box;
             }
 
-            body,
-            html {
+            body {
                   margin: 0;
-                  padding: 0;
+                  background: var(--bg);
+                  color: var(--text);
+                  font-family: var(--font-body);
                   height: 100vh;
-                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-                  background-color: #d1d7db;
-            }
-
-            body::before {
-                  content: "";
-                  position: absolute;
-                  top: 0;
-                  width: 100%;
-                  height: 127px;
-                  background-color: #00a884;
-                  z-index: -1;
-            }
-
-            .app-container {
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  height: 100vh;
-                  padding: 20px;
-                  box-sizing: border-box;
-            }
-
-            /* --- Auth Panel --- */
-            #authPanel {
-                  background: white;
-                  padding: 30px;
-                  border-radius: 10px;
-                  box-shadow: 0 17px 50px 0 rgba(11, 20, 26, .19), 0 12px 15px 0 rgba(11, 20, 26, .24);
-                  width: 440px;
-                  text-align: center;
-            }
-
-            #authPanel h2 {
-                  margin-top: 0;
-            }
-
-            #authPanel input {
-                  width: 100%;
-                  padding: 12px;
-                  margin: 10px 0;
-                  border: 1px solid #ccc;
-                  border-radius: 8px;
-                  font-size: 15px;
-            }
-
-            #authPanel button {
-                  width: 100%;
-                  background: #00a884;
-                  color: white;
-                  border: none;
-                  padding: 12px;
-                  border-radius: 8px;
-                  font-size: 16px;
-                  cursor: pointer;
-                  margin-top: 10px;
-                  font-weight: 500;
-            }
-
-            #authPanel button:hover {
-                  background: #018d6f;
-            }
-
-            .auth-toggle {
-                  margin-top: 12px;
-                  font-size: 14px;
-            }
-
-            .auth-toggle a {
-                  color: #00a884;
-                  cursor: pointer;
-                  text-decoration: underline;
-            }
-
-            /* --- Chat App Layout --- */
-            .chat-app {
-                  display: none;
-                  width: 100%;
-                  max-width: 1600px;
-                  height: 100%;
-                  background: white;
-                  border-radius: 3px;
-                  box-shadow: 0 17px 50px 0 rgba(11, 20, 26, .19), 0 12px 15px 0 rgba(11, 20, 26, .24);
                   overflow: hidden;
-                  position: relative;
             }
 
-            .chat-app.flex {
-                  display: flex;
+            /* ---------- Layout shell ---------- */
+            .app {
+                  display: grid;
+                  grid-template-rows: auto 1fr;
+                  height: 100vh;
             }
 
-            /* Sidebar */
-            .sidebar {
-                  width: 30%;
-                  min-width: 300px;
-                  border-right: 1px solid #d1d7db;
+            .topbar {
                   display: flex;
-                  flex-direction: column;
-                  background: #ffffff;
-            }
-
-            .sidebar-header {
-                  padding: 10px 16px;
-                  background: #f0f2f5;
-                  display: flex;
-                  justify-content: space-between;
                   align-items: center;
-                  height: 60px;
+                  justify-content: space-between;
+                  padding: 12px 20px;
+                  background: var(--surface);
+                  border-bottom: 1px solid var(--border);
             }
 
-            .sidebar-header .user-info {
+            .brand {
                   display: flex;
                   align-items: center;
                   gap: 10px;
-                  font-weight: 500;
-            }
-
-            .sidebar-header .user-info .mini-avatar {
-                  width: 36px;
-                  height: 36px;
-                  border-radius: 50%;
-                  background: #dfe5e7;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: 600;
-                  color: #54656f;
-                  font-size: 14px;
-            }
-
-            .sidebar-header .actions {
-                  display: flex;
-                  gap: 6px;
-            }
-
-            .sidebar-header .actions button {
-                  background: transparent;
-                  border: none;
-                  cursor: pointer;
-                  font-size: 20px;
-                  color: #54656f;
-                  padding: 6px;
-                  border-radius: 50%;
-                  width: 36px;
-                  height: 36px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-            }
-
-            .sidebar-header .actions button:hover {
-                  background: #d1d7db;
-            }
-
-            .conversation-search {
-                  padding: 8px 12px;
-                  background: #f5f6f6;
-            }
-
-            .conversation-search input {
-                  width: 100%;
-                  padding: 8px 12px;
-                  border: none;
-                  border-radius: 8px;
-                  background: #fff;
-                  font-size: 14px;
-                  outline: none;
-            }
-
-            .conversation-list {
-                  flex-grow: 1;
-                  overflow-y: auto;
-            }
-
-            .conversation-item {
-                  padding: 12px 15px;
-                  display: flex;
-                  align-items: center;
-                  border-bottom: 1px solid #f2f2f2;
-                  cursor: pointer;
-                  transition: background 0.2s;
-                  position: relative;
-            }
-
-            .conversation-item:hover {
-                  background: #f5f6f6;
-            }
-
-            .conversation-item.active {
-                  background: #f0f2f5;
-            }
-
-            .conversation-item .avatar {
-                  width: 49px;
-                  height: 49px;
-                  border-radius: 50%;
-                  background-color: #dfe5e7;
-                  margin-right: 15px;
-                  flex-shrink: 0;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: 600;
-                  color: #54656f;
-                  font-size: 18px;
-                  text-transform: uppercase;
-            }
-
-            .conversation-item .conv-details {
-                  flex: 1;
-                  min-width: 0;
-            }
-
-            .conversation-item .conv-name {
-                  font-size: 17px;
-                  color: #111b21;
-                  font-weight: 500;
-                  white-space: nowrap;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-            }
-
-            .conversation-item .conv-last-msg {
+                  font-family: var(--font-mono);
                   font-size: 13px;
-                  color: #667781;
-                  white-space: nowrap;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
+                  letter-spacing: 0.08em;
+                  color: var(--text-muted);
             }
 
-            .conversation-item .conv-meta {
+            .brand b {
+                  color: var(--text);
+                  font-weight: 700;
+            }
+
+            /* Signal-strength status indicator — the signature element */
+            .signal {
                   display: flex;
-                  flex-direction: column;
                   align-items: flex-end;
-                  gap: 4px;
-                  margin-left: 8px;
-            }
-
-            .conversation-item .conv-time {
-                  font-size: 11px;
-                  color: #667781;
-                  white-space: nowrap;
-            }
-
-            .conversation-item .unread-badge {
-                  background: #25d366;
-                  color: white;
-                  font-size: 11px;
-                  font-weight: 600;
-                  min-width: 18px;
-                  height: 18px;
-                  border-radius: 10px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  padding: 0 5px;
-            }
-
-            /* Main Chat Window */
-            .chat-window {
-                  flex: 1;
-                  display: flex;
-                  flex-direction: column;
-                  background-color: #efeae2;
-                  position: relative;
-            }
-
-            .chat-header {
-                  padding: 10px 20px;
-                  background: #f0f2f5;
-                  display: flex;
-                  align-items: center;
-                  height: 60px;
-                  border-left: 1px solid #d1d7db;
-                  gap: 14px;
-            }
-
-            .chat-header .avatar {
-                  width: 40px;
-                  height: 40px;
-                  border-radius: 50%;
-                  background: #dfe5e7;
-                  flex-shrink: 0;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: 600;
-                  color: #54656f;
-                  font-size: 16px;
-                  text-transform: uppercase;
-            }
-
-            .chat-header-info {
-                  flex: 1;
-            }
-
-            .chat-header-info .name {
-                  font-weight: 500;
-                  color: #111b21;
-            }
-
-            .chat-header-info .status {
-                  font-size: 12px;
-                  color: #667781;
-            }
-
-            .chat-header .header-actions {
-                  display: flex;
-                  gap: 4px;
-            }
-
-            .chat-header .header-actions button {
-                  background: transparent;
-                  border: none;
-                  cursor: pointer;
-                  font-size: 18px;
-                  color: #54656f;
-                  padding: 6px;
-                  border-radius: 50%;
-                  width: 36px;
-                  height: 36px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-            }
-
-            .chat-header .header-actions button:hover {
-                  background: #d1d7db;
-            }
-
-            .messages {
-                  flex-grow: 1;
-                  overflow-y: auto;
-                  padding: 20px 60px;
-                  display: flex;
-                  flex-direction: column;
-                  gap: 4px;
-                  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23efeae2" opacity="0.4"/></svg>');
-            }
-
-            .messages .empty-chat {
-                  text-align: center;
-                  color: #888;
-                  margin-top: 40px;
-                  font-size: 14px;
-            }
-
-            /* Message Bubbles */
-            .message-wrapper {
-                  display: flex;
-                  flex-direction: column;
-                  max-width: 65%;
-                  position: relative;
-            }
-
-            .message-wrapper.sent {
-                  align-self: flex-end;
-                  align-items: flex-end;
-            }
-
-            .message-wrapper.received {
-                  align-self: flex-start;
-                  align-items: flex-start;
-            }
-
-            .message-wrapper .sender-name {
-                  font-size: 11px;
-                  color: #00a884;
-                  font-weight: 600;
-                  margin-bottom: 1px;
-                  padding: 0 12px;
-            }
-
-            .message {
-                  padding: 6px 10px 6px 12px;
-                  border-radius: 8px;
-                  font-size: 14.2px;
-                  color: #111b21;
-                  box-shadow: 0 1px 0.5px rgba(11, 20, 26, .13);
-                  position: relative;
-                  line-height: 1.4;
-                  word-wrap: break-word;
-                  min-width: 80px;
-            }
-
-            .message-wrapper.sent .message {
-                  background: #d9fdd3;
-                  border-top-right-radius: 0;
-            }
-
-            .message-wrapper.received .message {
-                  background: #ffffff;
-                  border-top-left-radius: 0;
-            }
-
-            .message .msg-footer {
-                  display: flex;
-                  justify-content: flex-end;
-                  align-items: center;
-                  gap: 4px;
-                  margin-top: 2px;
-                  font-size: 11px;
-                  color: #667781;
-            }
-
-            .message .msg-footer .msg-time {}
-
-            .message .msg-footer .msg-seen {
-                  color: #53bdeb;
-                  font-size: 14px;
-                  line-height: 1;
-            }
-
-            .message .msg-footer .msg-seen.seen-by-all {
-                  color: #53bdeb;
-            }
-
-            .message .msg-footer .msg-edited {
-                  font-size: 10px;
-                  color: #999;
-                  font-style: italic;
-            }
-
-            .message .msg-actions-overlay {
-                  display: none;
-                  position: absolute;
-                  top: 2px;
-                  right: 4px;
                   gap: 2px;
+                  height: 14px;
             }
 
-            .message:hover .msg-actions-overlay {
+            .signal i {
+                  width: 3px;
+                  background: var(--text-faint);
+                  border-radius: 1px;
+                  transition: background 0.25s ease;
+            }
+
+            .signal i:nth-child(1) {
+                  height: 4px;
+            }
+
+            .signal i:nth-child(2) {
+                  height: 7px;
+            }
+
+            .signal i:nth-child(3) {
+                  height: 10px;
+            }
+
+            .signal i:nth-child(4) {
+                  height: 14px;
+            }
+
+            .signal.live i {
+                  background: var(--accent);
+                  animation: pulse 1.8s ease-in-out infinite;
+            }
+
+            .signal.live i:nth-child(2) {
+                  animation-delay: 0.15s;
+            }
+
+            .signal.live i:nth-child(3) {
+                  animation-delay: 0.3s;
+            }
+
+            .signal.live i:nth-child(4) {
+                  animation-delay: 0.45s;
+            }
+
+            .signal.connecting i {
+                  background: var(--warn);
+                  animation: pulse 0.9s ease-in-out infinite;
+            }
+
+            .signal.down i {
+                  background: var(--danger);
+            }
+
+            @keyframes pulse {
+
+                  0%,
+                  100% {
+                        opacity: 0.35;
+                  }
+
+                  50% {
+                        opacity: 1;
+                  }
+            }
+
+            .status-text {
+                  font-family: var(--font-mono);
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.06em;
+            }
+
+            .status-text.live {
+                  color: var(--accent);
+            }
+
+            .status-text.connecting {
+                  color: var(--warn);
+            }
+
+            .status-text.down {
+                  color: var(--danger);
+            }
+
+            .auth-row {
                   display: flex;
-            }
-
-            .message .msg-actions-overlay button {
-                  background: rgba(255, 255, 255, 0.9);
-                  border: none;
-                  border-radius: 4px;
-                  cursor: pointer;
-                  font-size: 12px;
-                  padding: 2px 5px;
-                  color: #54656f;
-                  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            }
-
-            .message .msg-actions-overlay button:hover {
-                  background: #fff;
-            }
-
-            /* Input Area */
-            .input-area {
-                  display: flex;
-                  padding: 6px 12px;
-                  background: #f0f2f5;
-                  align-items: center;
                   gap: 8px;
-            }
-
-            .input-area .attach-btn {
-                  background: transparent;
-                  border: none;
-                  cursor: pointer;
-                  font-size: 22px;
-                  color: #54656f;
-                  padding: 6px;
-                  border-radius: 50%;
-                  width: 40px;
-                  height: 40px;
-                  display: flex;
                   align-items: center;
-                  justify-content: center;
             }
 
-            .input-area .attach-btn:hover {
-                  background: #d1d7db;
+            input,
+            button,
+            textarea {
+                  font-family: var(--font-body);
+                  font-size: 13px;
             }
 
-            .input-area input {
-                  flex: 1;
-                  border: none;
-                  border-radius: 8px;
-                  padding: 10px 14px;
-                  background: #ffffff;
-                  font-size: 15px;
+            input[type="text"],
+            input[type="email"],
+            input[type="password"],
+            input[type="datetime-local"] {
+                  background: var(--surface-raised);
+                  border: 1px solid var(--border);
+                  color: var(--text);
+                  border-radius: 6px;
+                  padding: 7px 10px;
                   outline: none;
             }
 
-            .input-area .send-btn {
-                  background: transparent;
-                  border: none;
+            input:focus {
+                  border-color: var(--accent-dim);
+            }
+
+            button {
+                  background: var(--surface-raised);
+                  border: 1px solid var(--border);
+                  color: var(--text);
+                  border-radius: 6px;
+                  padding: 7px 12px;
                   cursor: pointer;
-                  font-size: 22px;
-                  color: #54656f;
-                  padding: 6px;
-                  border-radius: 50%;
-                  width: 40px;
-                  height: 40px;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
+                  transition: border-color 0.15s ease, background 0.15s ease;
             }
 
-            .input-area .send-btn:hover {
-                  background: #d1d7db;
+            button:hover {
+                  border-color: var(--accent-dim);
             }
 
-            .input-area .send-btn:disabled {
-                  color: #ccc;
+            button:focus-visible {
+                  outline: 2px solid var(--accent);
+                  outline-offset: 1px;
+            }
+
+            button.primary {
+                  background: var(--accent);
+                  color: #04211B;
+                  border-color: var(--accent);
+                  font-weight: 600;
+            }
+
+            button.primary:hover {
+                  background: #3fd6ae;
+            }
+
+            button:disabled {
+                  opacity: 0.4;
                   cursor: not-allowed;
             }
 
-            .input-area .send-btn:disabled:hover {
-                  background: transparent;
+            /* ---------- Main split ---------- */
+            .main {
+                  display: grid;
+                  grid-template-columns: 300px 1fr;
+                  min-height: 0;
             }
 
-            /* No conversation selected */
-            .no-chat-selected {
-                  flex: 1;
+            .sidebar {
+                  background: var(--surface);
+                  border-right: 1px solid var(--border);
                   display: flex;
                   flex-direction: column;
+                  min-height: 0;
+            }
+
+            .sidebar-header {
+                  padding: 14px 16px 10px;
+                  display: flex;
+                  justify-content: space-between;
                   align-items: center;
-                  justify-content: center;
-                  color: #667781;
-                  font-size: 16px;
-                  gap: 12px;
-                  background: #f0f2f5;
             }
 
-            .no-chat-selected .icon {
-                  font-size: 64px;
-                  opacity: 0.4;
+            .sidebar-header h2 {
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.08em;
+                  color: var(--text-faint);
+                  font-family: var(--font-mono);
+                  margin: 0;
+                  font-weight: 600;
             }
 
-            .no-chat-selected .title {
-                  font-size: 20px;
-                  font-weight: 300;
+            .conversation-list {
+                  flex: 1;
+                  overflow-y: auto;
+                  padding: 0 8px;
             }
 
-            /* Modal */
-            .modal-overlay {
+            .conversation-row {
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  padding: 10px 10px;
+                  border-radius: 8px;
+                  cursor: pointer;
+                  margin-bottom: 2px;
+                  border: 1px solid transparent;
+            }
+
+            .conversation-row:hover {
+                  background: var(--surface-raised);
+            }
+
+            .conversation-row.active {
+                  background: var(--surface-raised);
+                  border-color: var(--accent-dim);
+            }
+
+            .conversation-dot {
+                  width: 6px;
+                  height: 6px;
+                  border-radius: 50%;
+                  background: var(--text-faint);
+                  flex-shrink: 0;
+            }
+
+            .conversation-dot.unread {
+                  background: var(--warn);
+                  animation: pulse 1.6s ease-in-out infinite;
+            }
+
+            .conversation-name {
+                  flex: 1;
+                  font-size: 13px;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+            }
+
+            .badge {
+                  background: var(--warn);
+                  color: #2A0D06;
+                  font-family: var(--font-mono);
+                  font-size: 10px;
+                  font-weight: 700;
+                  padding: 1px 6px;
+                  border-radius: 10px;
+                  min-width: 16px;
+                  text-align: center;
+            }
+
+            .empty-hint {
+                  padding: 20px 16px;
+                  color: var(--text-faint);
+                  font-size: 12px;
+                  line-height: 1.6;
+            }
+
+            /* ---------- Chat pane ---------- */
+            .chat-pane {
+                  display: grid;
+                  grid-template-rows: auto 1fr auto;
+                  min-height: 0;
+            }
+
+            .chat-header {
+                  padding: 14px 20px;
+                  border-bottom: 1px solid var(--border);
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+            }
+
+            .chat-header h3 {
+                  margin: 0;
+                  font-size: 14px;
+                  font-weight: 600;
+            }
+
+            .chat-header .sub {
+                  font-family: var(--font-mono);
+                  font-size: 11px;
+                  color: var(--text-faint);
+            }
+
+            .messages {
+                  overflow-y: auto;
+                  padding: 18px 20px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 10px;
+            }
+
+            .msg {
+                  max-width: 60%;
+                  padding: 9px 12px;
+                  border-radius: 10px;
+                  background: var(--surface-raised);
+                  border: 1px solid var(--border);
+                  font-size: 13.5px;
+                  line-height: 1.45;
+            }
+
+            .msg.mine {
+                  align-self: flex-end;
+                  background: var(--accent-dim);
+                  border-color: var(--accent-dim);
+                  position: relative;
+            }
+
+            .msg .meta {
+                  display: block;
+                  font-family: var(--font-mono);
+                  font-size: 10px;
+                  color: var(--text-faint);
+                  margin-top: 4px;
+            }
+
+            .msg.mine .meta {
+                  color: #9fe8d4;
+            }
+
+            .msg.editing .meta {
                   display: none;
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  right: 0;
-                  bottom: 0;
-                  background: rgba(0, 0, 0, 0.5);
-                  z-index: 1000;
-                  align-items: center;
-                  justify-content: center;
             }
 
-            .modal-overlay.show {
+            .msg-actions {
+                  display: none;
+                  gap: 4px;
+                  position: absolute;
+                  top: -12px;
+                  right: 6px;
+            }
+
+            .msg.mine:hover .msg-actions {
+                  display: flex;
+            }
+
+            .msg-actions button {
+                  padding: 2px 6px;
+                  font-size: 10px;
+                  line-height: 1.4;
+                  border-radius: 4px;
+                  background: var(--surface);
+            }
+
+            .msg-actions button:hover {
+                  border-color: var(--warn);
+            }
+
+            .msg-edit-row {
+                  display: flex;
+                  gap: 6px;
+                  margin-top: 2px;
+            }
+
+            .msg-edit-row input {
+                  flex: 1;
+                  padding: 5px 8px;
+                  font-size: 13px;
+            }
+
+            .msg-edit-row button {
+                  padding: 5px 8px;
+                  font-size: 11px;
+            }
+
+            .msg .edited-tag {
+                  opacity: 0.6;
+                  font-style: italic;
+            }
+
+            .msg.deleted {
+                  opacity: 0.5;
+                  font-style: italic;
+            }
+
+            button.danger-btn {
+                  border-color: var(--danger);
+                  color: var(--danger);
+            }
+
+            button.danger-btn:hover {
+                  background: var(--danger);
+                  color: #fff;
+            }
+
+            .system-line {
+                  align-self: center;
+                  font-family: var(--font-mono);
+                  font-size: 11px;
+                  color: var(--text-faint);
+                  padding: 4px 10px;
+            }
+
+            .composer {
+                  display: flex;
+                  gap: 8px;
+                  padding: 14px 20px;
+                  border-top: 1px solid var(--border);
+            }
+
+            .composer input {
+                  flex: 1;
+            }
+
+            .center-placeholder {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  height: 100%;
+                  color: var(--text-faint);
+                  font-size: 13px;
+                  text-align: center;
+                  padding: 20px;
+            }
+
+            /* ---------- Modal ---------- */
+            .modal-backdrop {
+                  position: fixed;
+                  inset: 0;
+                  background: rgba(0, 0, 0, 0.55);
+                  display: none;
+                  align-items: center;
+                  justify-content: center;
+                  z-index: 10;
+            }
+
+            .modal-backdrop.open {
                   display: flex;
             }
 
             .modal {
-                  background: white;
-                  border-radius: 8px;
-                  width: 500px;
-                  max-height: 80vh;
+                  background: var(--surface);
+                  border: 1px solid var(--border);
+                  border-radius: var(--radius);
+                  padding: 20px;
+                  width: 380px;
                   display: flex;
                   flex-direction: column;
-                  box-shadow: 0 17px 50px 0 rgba(11, 20, 26, .19);
-            }
-
-            .modal-header {
-                  padding: 16px 20px;
-                  border-bottom: 1px solid #e9edef;
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  font-weight: 500;
-                  font-size: 16px;
-            }
-
-            .modal-header .close-btn {
-                  background: none;
-                  border: none;
-                  font-size: 22px;
-                  cursor: pointer;
-                  color: #667781;
-                  padding: 4px;
-            }
-
-            .modal-body {
-                  padding: 16px 20px;
-                  overflow-y: auto;
-                  flex: 1;
-            }
-
-            .modal-body input,
-            .modal-body textarea {
-                  width: 100%;
-                  padding: 10px 12px;
-                  border: 1px solid #d1d7db;
-                  border-radius: 8px;
-                  font-size: 14px;
-                  margin-bottom: 12px;
-                  outline: none;
-                  font-family: inherit;
-            }
-
-            .modal-body input:focus,
-            .modal-body textarea:focus {
-                  border-color: #00a884;
-            }
-
-            .modal-body .member-option {
-                  display: flex;
-                  align-items: center;
-                  gap: 12px;
-                  padding: 8px 0;
-                  cursor: pointer;
-                  border-bottom: 1px solid #f2f2f2;
-            }
-
-            .modal-body .member-option:hover {
-                  background: #f5f6f6;
-            }
-
-            .modal-body .member-option input[type="checkbox"] {
-                  width: 18px;
-                  height: 18px;
-                  accent-color: #00a884;
-            }
-
-            .modal-body .member-option .member-avatar {
-                  width: 36px;
-                  height: 36px;
-                  border-radius: 50%;
-                  background: #dfe5e7;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-weight: 600;
-                  color: #54656f;
-                  font-size: 14px;
-                  text-transform: uppercase;
-            }
-
-            .modal-footer {
-                  padding: 12px 20px;
-                  border-top: 1px solid #e9edef;
-                  display: flex;
-                  justify-content: flex-end;
                   gap: 10px;
             }
 
-            .modal-footer button {
-                  padding: 8px 24px;
-                  border-radius: 8px;
+            .modal h3 {
+                  margin: 0 0 4px;
                   font-size: 14px;
-                  font-weight: 500;
+            }
+
+            .modal label {
+                  font-size: 11px;
+                  color: var(--text-faint);
+                  font-family: var(--font-mono);
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+            }
+
+            .modal .row {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 4px;
+            }
+
+            .modal-actions {
+                  display: flex;
+                  justify-content: flex-end;
+                  gap: 8px;
+                  margin-top: 6px;
+            }
+
+            .user-picker-list {
+                  max-height: 220px;
+                  overflow-y: auto;
+                  border: 1px solid var(--border);
+                  border-radius: 8px;
+                  margin-top: 2px;
+            }
+
+            .user-picker-row {
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  padding: 8px 10px;
                   cursor: pointer;
-                  border: none;
+                  font-size: 13px;
+                  border-bottom: 1px solid var(--border);
             }
 
-            .modal-footer .btn-primary {
-                  background: #00a884;
-                  color: white;
+            .user-picker-row:last-child {
+                  border-bottom: none;
             }
 
-            .modal-footer .btn-primary:hover {
-                  background: #018d6f;
+            .user-picker-row:hover {
+                  background: var(--surface-raised);
             }
 
-            .modal-footer .btn-primary:disabled {
-                  background: #ccc;
-                  cursor: not-allowed;
+            .user-picker-row.selected {
+                  background: var(--accent-dim);
+                  color: #eafff9;
             }
 
-            .modal-footer .btn-secondary {
-                  background: #f0f2f5;
-                  color: #111b21;
+            .user-picker-row .uid {
+                  font-family: var(--font-mono);
+                  font-size: 10px;
+                  color: var(--text-faint);
             }
 
-            .modal-footer .btn-secondary:hover {
-                  background: #d1d7db;
+            .user-picker-row.selected .uid {
+                  color: #b9f3e4;
             }
 
-            /* Toast */
-            .toast {
-                  position: fixed;
-                  bottom: 30px;
-                  left: 50%;
-                  transform: translateX(-50%);
-                  background: #323232;
-                  color: white;
-                  padding: 12px 24px;
-                  border-radius: 8px;
-                  font-size: 14px;
-                  z-index: 2000;
-                  opacity: 0;
-                  transition: opacity 0.3s;
-                  pointer-events: none;
-            }
-
-            .toast.show {
-                  opacity: 1;
-            }
-
-            /* Scrollbar */
             ::-webkit-scrollbar {
-                  width: 6px;
+                  width: 8px;
             }
 
             ::-webkit-scrollbar-thumb {
-                  background: #ccc;
-                  border-radius: 3px;
+                  background: var(--border);
+                  border-radius: 4px;
             }
 
             ::-webkit-scrollbar-track {
                   background: transparent;
-            }
-
-            /* Responsive */
-            @media (max-width: 768px) {
-                  .sidebar {
-                        width: 100%;
-                        min-width: unset;
-                  }
-
-                  .chat-window {
-                        display: none;
-                  }
-
-                  .chat-window.show {
-                        display: flex;
-                  }
-
-                  .sidebar.hide {
-                        display: none;
-                  }
-
-                  .messages {
-                        padding: 20px;
-                  }
             }
       </style>
 </head>
 
 <body>
 
-      <div class="app-container">
-            <!-- 1. Authentication Panel -->
-            <div id="authPanel">
-                  <div style="font-size: 48px; margin-bottom: 8px;">💬</div>
-                  <h2>KalemnyShokran</h2>
-                  <p style="color:#667781; font-size:14px; margin: -8px 0 16px;">Sign in to your account</p>
+      <div class="app">
 
-                  <div id="loginForm">
-                        <input type="text" id="email" placeholder="Email / Username" autocomplete="email" />
-                        <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
-                        <button onclick="login()">Log In</button>
-                        <p class="auth-toggle">Don't have an account? <a onclick="showRegister()">Create one</a></p>
+            <!-- ============ TOP BAR: brand + connection signal + auth ============ -->
+            <div class="topbar">
+                  <div class="brand">
+                        <div id="signalIndicator" class="signal down"><i></i><i></i><i></i><i></i></div>
+                        <b>SIGNAL•R</b> CHAT TEST CLIENT
+                        <span id="statusText" class="status-text down">DISCONNECTED</span>
                   </div>
-
-                  <div id="registerForm" style="display:none;">
-                        <input type="text" id="regUsername" placeholder="Username" />
-                        <input type="text" id="regDisplayName" placeholder="Display Name" />
-                        <input type="email" id="regEmail" placeholder="Email" />
-                        <input type="password" id="regPassword" placeholder="Password" />
-                        <button onclick="register()">Create Account</button>
-                        <p class="auth-toggle">Already have an account? <a onclick="showLogin()">Sign in</a></p>
+                  <div class="auth-row" id="authRow">
+                        <input id="emailInput" type="email" placeholder="email" value="BeshoyAshraf@gmail.com"
+                              style="width:170px" />
+                        <input id="passwordInput" type="password" placeholder="password" value="P@ssword"
+                              style="width:120px" />
+                        <button id="loginBtn" class="primary">Log in &amp; connect</button>
+                        <span id="userLabel" class="status-text" style="color:var(--text-faint)"></span>
                   </div>
-
-                  <p><small id="statusText" style="color: #667781;">Enter credentials to connect</small></p>
             </div>
 
-            <!-- 2. Main Chat UI -->
-            <div class="chat-app" id="chatApp">
+            <div class="main">
 
-                  <!-- Left Sidebar -->
-                  <div class="sidebar" id="sidebar">
+                  <!-- ============ SIDEBAR: conversations ============ -->
+                  <div class="sidebar">
                         <div class="sidebar-header">
-                              <div class="user-info">
-                                    <div class="mini-avatar" id="myAvatarMini">U</div>
-                                    <span id="myNameDisplay">User</span>
-                              </div>
-                              <div class="actions">
-                                    <button onclick="showNewConversationModal()" title="New conversation">✏️</button>
-                                    <button onclick="loadConversations(); loadUsers();" title="Refresh">🔄</button>
-                                    <button onclick="logout()" title="Log out">⏻</button>
-                              </div>
+                              <h2>Conversations</h2>
+                              <button id="newConvoBtn" title="Start a new conversation">+ New</button>
                         </div>
-                        <div class="conversation-search">
-                              <input type="text" id="convSearch" placeholder="Search or start new chat"
-                                    oninput="filterConversations()" />
-                        </div>
-                        <div class="conversation-list" id="conversationList">
-                              <div style="text-align:center; padding:30px; color:#667781;">Loading conversations...
+                        <div id="conversationList" class="conversation-list">
+                              <div class="empty-hint">
+                                    Log in to load your conversations. New ones created elsewhere (e.g. via Swagger)
+                                    will
+                                    appear here live through the <code>ConversationCreated</code> event.
                               </div>
                         </div>
                   </div>
 
-                  <!-- Right Chat Window -->
-                  <div class="chat-window" id="chatWindow">
-                        <!-- When no conversation is selected -->
-                        <div class="no-chat-selected" id="noChatSelected">
-                              <div class="icon">💬</div>
-                              <div class="title">KalemnyShokran</div>
-                              <div style="font-size:14px;">Select a conversation to start chatting</div>
+                  <!-- ============ CHAT PANE ============ -->
+                  <div class="chat-pane">
+                        <div class="chat-header">
+                              <div>
+                                    <h3 id="chatTitle">No conversation selected</h3>
+                                    <div id="chatSub" class="sub"></div>
+                              </div>
+                              <div style="display:flex; gap:8px; align-items:center;">
+                                    <button id="catchUpBtn" style="display:none">Fetch missed
+                                          (GetMessagesSince)</button>
+                                    <button id="deleteConvoBtn" class="danger-btn" style="display:none"
+                                          title="Delete this conversation">Delete conversation</button>
+                              </div>
                         </div>
 
-                        <!-- Active conversation (hidden initially) -->
-                        <div id="activeChat" style="display:none; flex-direction:column; height:100%;">
-                              <div class="chat-header">
-                                    <div class="avatar" id="activeConvAvatar">G</div>
-                                    <div class="chat-header-info">
-                                          <div class="name" id="activeConvName">Group Name</div>
-                                          <div class="status" id="activeConvStatus">Click for conversation info</div>
-                                    </div>
-                                    <div class="header-actions">
-                                          <button onclick="showConversationInfo()" title="Conversation info">ℹ️</button>
-                                    </div>
-                              </div>
-                              <div class="messages" id="messageHistory"></div>
-                              <div class="input-area" id="inputArea">
-                                    <button class="attach-btn" onclick="showNewConversationModal()"
-                                          title="New conversation">➕</button>
-                                    <input type="text" id="messageInput" placeholder="Type a message"
-                                          onkeypress="handleEnter(event)" />
-                                    <button class="send-btn" id="sendBtn" onclick="sendMessage()"
-                                          title="Send">➤</button>
+                        <div id="messages" class="messages">
+                              <div class="center-placeholder">Select a conversation from the left, or create a new one.
                               </div>
                         </div>
+
+                        <div class="composer">
+                              <input id="messageInput" type="text" placeholder="Type a message…" disabled />
+                              <button id="sendBtn" class="primary" disabled>Send</button>
+                        </div>
                   </div>
+
             </div>
       </div>
 
-      <!-- Modals -->
-      <!-- New Conversation Modal -->
-      <div class="modal-overlay" id="newConvModal">
+      <!-- ============ NEW CONVERSATION MODAL ============ -->
+      <div class="modal-backdrop" id="modalBackdrop">
             <div class="modal">
-                  <div class="modal-header">
-                        <span>New Conversation</span>
-                        <button class="close-btn" onclick="closeModal('newConvModal')">✕</button>
-                  </div>
-                  <div class="modal-body">
-                        <input type="text" id="convTitle" placeholder="Conversation title (optional for group)" />
-                        <textarea id="convDescription" placeholder="Description (optional)" rows="2"></textarea>
-                        <p style="font-weight:500; margin:8px 0 4px; font-size:14px;">Add Members</p>
-                        <div id="memberList" style="max-height:200px; overflow-y:auto;">
-                              <div style="color:#667781; font-size:14px;">Loading users...</div>
+                  <h3>Start a new conversation</h3>
+                  <div class="row">
+                        <label>Start a chat with</label>
+                        <input id="userSearchInput" type="text" placeholder="Search users…" />
+                        <div id="userPickerList" class="user-picker-list">
+                              <div class="empty-hint">Loading users…</div>
                         </div>
                   </div>
-                  <div class="modal-footer">
-                        <button class="btn-secondary" onclick="closeModal('newConvModal')">Cancel</button>
-                        <button class="btn-primary" id="createConvBtn" onclick="createConversation()"
-                              disabled>Create</button>
+                  <div class="row">
+                        <label>Title (optional, used for group chats)</label>
+                        <input id="convoTitleInput" type="text" placeholder="Team chat" />
+                  </div>
+                  <div class="row">
+                        <label>Description (optional)</label>
+                        <input id="convoDescriptionInput" type="text" placeholder="What's this conversation about?" />
+                  </div>
+                  <div class="row">
+                        <label>Profile picture URL (optional)</label>
+                        <input id="convoProfilePictureInput" type="text" placeholder="https://…" />
+                  </div>
+                  <div class="modal-actions">
+                        <button id="cancelModalBtn">Cancel</button>
+                        <button id="createConvoBtn" class="primary" disabled>Create</button>
                   </div>
             </div>
       </div>
-
-      <!-- Toast -->
-      <div class="toast" id="toast"></div>
-
-      <!-- SignalR -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 
       <script>
-            // =============================================
-            // CONFIGURATION
-            // =============================================
-            const apiBaseUrl = 'http://localhost:5091';
-            let jwtToken = '';
-            let refreshToken = '';
-            let connection = null;
-            let activeConversationId = null;
-            let currentUserId = null;
-            let currentUserName = '';
-            let usersMap = {};        // userId -> user object
-            let conversationsMap = {}; // convId -> conversation object
-            let messagesMap = {};     // msgId -> { element, data }
-            let unreadCounts = {};    // convId -> count
-            let myConversationUserIds = {}; // convId -> Set of userIds (members besides me)
+            /* ================================================================
+               CONFIG — matched against your real ConversationController,
+               MessageController, and UserController.
+               ================================================================ */
+            const CONFIG = {
+                  apiBaseUrl: "http://localhost:5091",
+                  hubUrl: "http://localhost:5091/hubs/chat",
 
-            // =============================================
-            // JWT HELPERS
-            // =============================================
-            function parseJwt(token) {
+                  loginPath: "/api/Account/login",
+
+                  // GET /api/User/GetUserConversations/{userId} -> GetUserInboxQuery result.
+                  // This is the user-scoped list (vs GET /api/Conversation, which has no
+                  // filter params and looked like it returns everything).
+                  myConversationsPath: (userId) => `/api/User/GetUserConversations/${userId}`,
+
+                  // GET /api/Message/conversation/{conversationId}?pageNumber=&pageSize=
+                  // Paginated — response may be a bare array or a { items: [...] } wrapper
+                  // depending on how GetMessagesByConversationIdQuery is shaped; the client
+                  // below handles both.
+                  messagesPath: (conversationId, pageNumber = 1, pageSize = 50) =>
+                        `/api/Message/conversation/${conversationId}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+
+                  // POST /api/Conversation -> CreateConversationCommand shape (confirmed earlier)
+                  createConversationPath: () => `/api/Conversation`,
+
+                  // POST /api/Message -> CreateMessageCommand. Exact field names are a guess
+                  // (conversationId/senderId/content) since CreateMessageCommand.cs wasn't
+                  // shared — adjust the body in sendMessage() below if yours differs.
+                  createMessagePath: () => `/api/Message`,
+
+                  // PATCH /api/Message/{conversationId}/{messageId}/seen?userId=
+                  markSeenPath: (conversationId, messageId, userId) =>
+                        `/api/Message/${conversationId}/${messageId}/seen?userId=${userId}`,
+
+                  // PUT /api/Message/{id} -> UpdateMessageCommand. UpdateMessageCommand.cs
+                  // wasn't shared, so the body assumes { messageId, content } — matching
+                  // the controller's `if (id != command.MessageId)` check. Adjust if your
+                  // command has extra required fields.
+                  updateMessagePath: (messageId) => `/api/Message/${messageId}`,
+
+                  // DELETE /api/Message/{id}
+                  deleteMessagePath: (messageId) => `/api/Message/${messageId}`,
+
+                  // DELETE /api/Conversation/{id}
+                  deleteConversationPath: (conversationId) => `/api/Conversation/${conversationId}`,
+
+                  // GET /api/Message/conversation/{conversationId}/unread-count?userId=
+                  // No bulk "all conversations" endpoint exists, so the sidebar fetches
+                  // this once per conversation on load (see loadConversations()).
+                  unreadCountPath: (conversationId, userId) =>
+                        `/api/Message/conversation/${conversationId}/unread-count?userId=${userId}`,
+
+                  // GET /api/Conversation/{id}/members -> GetConversationMembersQuery result.
+                  // Used to resolve the "other person's name" for non-group chats.
+                  conversationMembersPath: (conversationId) => `/api/Conversation/${conversationId}/members`,
+
+                  // GET /api/User -> GetUsersQuery result (requires [Authorize], which we
+                  // already send a Bearer token for). Used to populate the "new conversation"
+                  // user picker.
+                  usersListPath: () => `/api/User`,
+
+                  // GET /api/User/{id} -> GetUserByIdQuery result.
+                  userByIdPath: (id) => `/api/User/${id}`,
+            };
+
+            /* ================================================================
+               STATE
+               ================================================================ */
+            const state = {
+                  token: null,
+                  userId: null,
+                  connection: null,
+                  conversations: new Map(),   // id -> { id, title, unreadCount, isGroup, resolvedTitle }
+                  activeConversationId: null,
+                  messagesByConversation: new Map(), // id -> array of message dto
+                  userDisplayNames: new Map(),       // userId -> display name (cache, avoids refetching)
+                  allUsers: [],                      // populated when the "new conversation" modal opens
+                  selectedOtherUserId: null,         // currently picked user in that modal
+            };
+
+            /* ================================================================
+               DOM refs
+               ================================================================ */
+            const el = {
+                  signalIndicator: document.getElementById('signalIndicator'),
+                  statusText: document.getElementById('statusText'),
+                  loginBtn: document.getElementById('loginBtn'),
+                  emailInput: document.getElementById('emailInput'),
+                  passwordInput: document.getElementById('passwordInput'),
+                  userLabel: document.getElementById('userLabel'),
+                  conversationList: document.getElementById('conversationList'),
+                  chatTitle: document.getElementById('chatTitle'),
+                  chatSub: document.getElementById('chatSub'),
+                  messages: document.getElementById('messages'),
+                  messageInput: document.getElementById('messageInput'),
+                  sendBtn: document.getElementById('sendBtn'),
+                  catchUpBtn: document.getElementById('catchUpBtn'),
+                  deleteConvoBtn: document.getElementById('deleteConvoBtn'),
+                  newConvoBtn: document.getElementById('newConvoBtn'),
+                  modalBackdrop: document.getElementById('modalBackdrop'),
+                  userSearchInput: document.getElementById('userSearchInput'),
+                  userPickerList: document.getElementById('userPickerList'),
+                  convoTitleInput: document.getElementById('convoTitleInput'),
+                  convoDescriptionInput: document.getElementById('convoDescriptionInput'),
+                  convoProfilePictureInput: document.getElementById('convoProfilePictureInput'),
+                  cancelModalBtn: document.getElementById('cancelModalBtn'),
+                  createConvoBtn: document.getElementById('createConvoBtn'),
+            };
+
+            /* ================================================================
+               CONNECTION STATUS UI
+               ================================================================ */
+            function setSignalState(mode /* 'live' | 'connecting' | 'down' */) {
+                  el.signalIndicator.className = `signal ${mode}`;
+                  el.statusText.className = `status-text ${mode}`;
+                  el.statusText.textContent = mode === 'live' ? 'LIVE'
+                        : mode === 'connecting' ? 'RECONNECTING…'
+                              : 'DISCONNECTED';
+            }
+
+            /* ================================================================
+               JWT helper — decode payload only, no signature validation.
+               ================================================================ */
+            function decodeJwt(jwt) {
+                  const payload = jwt.split('.')[1];
+                  const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+                  return JSON.parse(json);
+            }
+
+            function extractUserId(decoded) {
+                  return decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+                        ?? decoded['nameid']
+                        ?? decoded['sub'];
+            }
+
+            /* ================================================================
+               LOGIN + CONNECT
+               ================================================================ */
+            el.loginBtn.addEventListener('click', async () => {
+                  el.loginBtn.disabled = true;
+                  el.loginBtn.textContent = 'Logging in…';
                   try {
-                        const base64Url = token.split('.')[1];
-                        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-                        return JSON.parse(jsonPayload);
-                  } catch (e) {
-                        console.error('Failed to parse JWT', e);
+                        const res = await fetch(CONFIG.apiBaseUrl + CONFIG.loginPath, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                    email: el.emailInput.value,
+                                    password: el.passwordInput.value,
+                              }),
+                        });
+                        if (!res.ok) throw new Error(`Login failed (${res.status})`);
+                        const data = await res.json();
+
+                        state.token = data.token ?? data.Token;
+                        const decoded = decodeJwt(state.token);
+                        state.userId = data.userId ?? data.UserId ?? extractUserId(decoded);
+
+                        el.userLabel.textContent = `${decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ?? decoded['email'] ?? state.userId}`;
+
+                        await connectToHub();
+                        await loadConversations();
+                  } catch (err) {
+                        alert(err.message);
+                  } finally {
+                        el.loginBtn.disabled = false;
+                        el.loginBtn.textContent = 'Log in & connect';
+                  }
+            });
+
+            async function connectToHub() {
+                  setSignalState('connecting');
+
+                  state.connection = new signalR.HubConnectionBuilder()
+                        .withUrl(CONFIG.hubUrl, { accessTokenFactory: () => state.token })
+                        .withAutomaticReconnect()
+                        .build();
+
+                  // -------- live event handlers --------
+                  state.connection.on('ReceiveMessage', (msg) => {
+                        const conversationId = msg.conversationId ?? msg.ConversationId ?? state.activeConversationId;
+                        appendMessage(conversationId, msg);
+
+                        // If this message just landed in the conversation the user is
+                        // already looking at, mark it seen immediately — otherwise the
+                        // badge count grows even though they're watching it arrive live.
+                        const senderId = msg.userSenderId ?? msg.UserSenderId ?? msg.senderId ?? msg.SenderId;
+                        const messageId = msg.id ?? msg.Id;
+                        if (conversationId === state.activeConversationId && senderId !== state.userId && messageId) {
+                              authedFetch(CONFIG.markSeenPath(conversationId, messageId, state.userId), { method: 'PATCH' })
+                                    .then(() => {
+                                          // Zero it locally right away rather than waiting on a possible
+                                          // UnreadCountChanged push — if your MarkMessageAsSeenCommandHandler
+                                          // doesn't also broadcast that event, the badge would otherwise
+                                          // stay stuck at whatever it was before this message arrived.
+                                          const convo = state.conversations.get(conversationId);
+                                          if (convo) {
+                                                convo.unreadCount = 0;
+                                                renderConversationList();
+                                          }
+                                    })
+                                    .catch(() => { /* non-fatal — badge may just lag until next open */ });
+                        }
+                  });
+
+                  state.connection.on('MessageSeen', (messageId, userId) => {
+                        console.log('[MessageSeen]', messageId, userId);
+                  });
+
+                  state.connection.on('ConversationCreated', async (conversationId) => {
+                        // A conversation this user is part of was created elsewhere
+                        // (e.g. via Swagger). Fetch its details and add it to the sidebar
+                        // without requiring a page refresh.
+                        addSystemLine(`New conversation created: ${conversationId}`);
+                        await refreshSingleConversation(conversationId);
+                  });
+
+                  state.connection.on('UnreadCountChanged', (conversationId, unreadCount) => {
+                        const convo = state.conversations.get(conversationId);
+                        if (convo) {
+                              convo.unreadCount = unreadCount;
+                              renderConversationList();
+                        }
+                  });
+
+                  state.connection.onreconnecting(() => setSignalState('connecting'));
+                  state.connection.onreconnected(async () => {
+                        setSignalState('live');
+                        // Catch up on anything missed while disconnected, for the
+                        // conversation currently open.
+                        if (state.activeConversationId) {
+                              await fetchMissedMessages(state.activeConversationId);
+                        }
+                  });
+                  state.connection.onclose(() => setSignalState('down'));
+
+                  await state.connection.start();
+                  setSignalState('live');
+            }
+
+            /* ================================================================
+               CONVERSATIONS — list, create, select
+               ================================================================ */
+            async function authedFetch(path, options = {}) {
+                  const res = await fetch(CONFIG.apiBaseUrl + path, {
+                        ...options,
+                        headers: {
+                              ...(options.headers ?? {}),
+                              'Authorization': `Bearer ${state.token}`,
+                              'Content-Type': 'application/json',
+                        },
+                  });
+                  if (!res.ok) {
+                        // Surface the server's actual error body (ASP.NET model validation,
+                        // ProblemDetails, etc.) instead of just the status code — a bare
+                        // "400" tells you nothing about which field failed.
+                        let detail = '';
+                        try {
+                              const text = await res.text();
+                              detail = text ? ` — ${text}` : '';
+                        } catch { /* body already consumed or unreadable */ }
+                        throw new Error(`${path} failed (${res.status})${detail}`);
+                  }
+                  return res.status === 204 ? null : res.json();
+            }
+
+            async function loadConversations() {
+                  try {
+                        const list = await authedFetch(CONFIG.myConversationsPath(state.userId));
+                        const items = Array.isArray(list) ? list : (list.items ?? list.Items ?? []);
+
+                        state.conversations.clear();
+                        for (const c of items) {
+                              const id = c.id ?? c.Id ?? c.conversationId ?? c.ConversationId;
+                              const isGroup = c.isGroup ?? c.IsGroup ?? false;
+                              state.conversations.set(id, {
+                                    id,
+                                    title: c.title ?? c.Title ?? c.name ?? c.Name ?? '(untitled)',
+                                    isGroup,
+                                    unreadCount: 0, // filled in below
+                              });
+                              // For 1:1 chats, the stored Title is unreliable (it's whatever the
+                              // creator set, not "the other person" relative to whoever's viewing) —
+                              // resolve and overwrite it with the other participant's real name.
+                              if (!isGroup) resolveDirectConversationName(id);
+                        }
+                        renderConversationList();
+
+                        // No bulk "all conversations" unread endpoint exists — fetch each
+                        // conversation's count individually and patch it in as it arrives,
+                        // so the list is usable immediately and badges fill in progressively.
+                        await Promise.all(items.map(async (c) => {
+                              const id = c.id ?? c.Id ?? c.conversationId ?? c.ConversationId;
+                              try {
+                                    const count = await authedFetch(CONFIG.unreadCountPath(id, state.userId));
+                                    const convo = state.conversations.get(id);
+                                    if (convo) {
+                                          convo.unreadCount = typeof count === 'number' ? count : (count.unreadCount ?? count.UnreadCount ?? 0);
+                                          renderConversationList();
+                                    }
+                              } catch { /* leave at 0 if this one fails */ }
+                        }));
+                  } catch (err) {
+                        el.conversationList.innerHTML = `<div class="empty-hint">
+      Could not load conversation list (${err.message}).<br/><br/>
+      Check <code>CONFIG.myConversationsPath</code> matches your API.
+      New conversations will still appear live.
+    </div>`;
+                  }
+            }
+
+            /* ================================================================
+               For non-group conversations, show the OTHER participant's name
+               instead of the raw stored Title — the stored value is whatever the
+               creator set once (see CreateConversationCommandHandler), so it's
+               only correct from the creator's point of view, not each viewer's.
+               ================================================================ */
+            async function resolveDirectConversationName(conversationId) {
+                  try {
+                        const members = await authedFetch(CONFIG.conversationMembersPath(conversationId));
+                        const memberList = Array.isArray(members) ? members : (members.items ?? members.Items ?? []);
+
+                        const otherId = memberList
+                              .map(m => (typeof m === 'string' ? m : (m.userId ?? m.UserId ?? m.id ?? m.Id)))
+                              .find(id => id !== state.userId);
+
+                        if (!otherId) return;
+
+                        const name = await getUserDisplayName(otherId);
+                        const convo = state.conversations.get(conversationId);
+                        if (convo && name) {
+                              convo.title = name;
+                              renderConversationList();
+                              if (conversationId === state.activeConversationId) {
+                                    el.chatTitle.textContent = name;
+                              }
+                        }
+                  } catch {
+                        // Members endpoint shape didn't match, or lookup failed — the
+                        // conversation keeps its original stored title as a fallback.
+                  }
+            }
+
+            async function getUserDisplayName(userId) {
+                  if (state.userDisplayNames.has(userId)) return state.userDisplayNames.get(userId);
+                  try {
+                        const user = await authedFetch(CONFIG.userByIdPath(userId));
+                        const name = user.displayName ?? user.DisplayName ?? user.username ?? user.Username
+                              ?? user.email ?? user.Email ?? userId.slice(0, 8);
+                        state.userDisplayNames.set(userId, name);
+                        return name;
+                  } catch {
                         return null;
                   }
             }
 
-            // =============================================
-            // AUTH
-            // =============================================
-            function showRegister() {
-                  document.getElementById('loginForm').style.display = 'none';
-                  document.getElementById('registerForm').style.display = 'block';
-                  document.getElementById('statusText').innerText = '';
-            }
-            function showLogin() {
-                  document.getElementById('loginForm').style.display = 'block';
-                  document.getElementById('registerForm').style.display = 'none';
-                  document.getElementById('statusText').innerText = '';
+            async function refreshSingleConversation(conversationId) {
+                  if (!state.conversations.has(conversationId)) {
+                        state.conversations.set(conversationId, {
+                              id: conversationId,
+                              title: `Conversation ${conversationId.slice(0, 8)}…`,
+                              isGroup: false,
+                              unreadCount: 1,
+                        });
+                        resolveDirectConversationName(conversationId);
+                  }
+                  renderConversationList();
             }
 
-            async function register() {
-                  const username = document.getElementById('regUsername').value.trim();
-                  const displayName = document.getElementById('regDisplayName').value.trim();
-                  const email = document.getElementById('regEmail').value.trim();
-                  const password = document.getElementById('regPassword').value;
-                  const statusText = document.getElementById('statusText');
-
-                  if (!username || !displayName || !email || !password) {
-                        statusText.innerText = 'Please fill all fields.';
-                        statusText.style.color = 'red';
+            function renderConversationList() {
+                  if (state.conversations.size === 0) {
+                        el.conversationList.innerHTML = `<div class="empty-hint">No conversations yet.</div>`;
                         return;
                   }
+                  el.conversationList.innerHTML = '';
+                  for (const convo of state.conversations.values()) {
+                        const row = document.createElement('div');
+                        row.className = 'conversation-row' + (convo.id === state.activeConversationId ? ' active' : '');
+                        row.innerHTML = `
+      <span class="conversation-dot ${convo.unreadCount > 0 ? 'unread' : ''}"></span>
+      <span class="conversation-name">${escapeHtml(convo.title)}</span>
+      ${convo.unreadCount > 0 ? `<span class="badge">${convo.unreadCount}</span>` : ''}
+    `;
+                        row.addEventListener('click', () => selectConversation(convo.id));
+                        el.conversationList.appendChild(row);
+                  }
+            }
 
-                  statusText.innerText = 'Creating account...';
-                  statusText.style.color = '#667781';
+            async function selectConversation(conversationId) {
+                  state.activeConversationId = conversationId;
+                  renderConversationList();
 
+                  const convo = state.conversations.get(conversationId);
+                  el.chatTitle.textContent = convo?.title ?? conversationId;
+                  el.chatSub.textContent = conversationId;
+                  el.catchUpBtn.style.display = 'inline-block';
+                  el.deleteConvoBtn.style.display = 'inline-block';
+                  el.messageInput.disabled = false;
+                  el.sendBtn.disabled = false;
+
+                  await state.connection.invoke('JoinConversation', conversationId);
+
+                  el.messages.innerHTML = '';
+                  let history = [];
                   try {
-                        const response = await fetch(`${apiBaseUrl}/api/User`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ username, email, password, displayName, profilePictureUrl: '' })
-                        });
-
-                        if (response.ok) {
-                              statusText.innerText = 'Account created! You can now log in.';
-                              statusText.style.color = '#25d366';
-                              showLogin();
-                              document.getElementById('email').value = email;
-                              document.getElementById('password').value = '';
-                        } else {
-                              const err = await response.text();
-                              statusText.innerText = 'Registration failed: ' + (err || 'Unknown error');
-                              statusText.style.color = 'red';
-                        }
+                        const raw = await authedFetch(CONFIG.messagesPath(conversationId));
+                        history = Array.isArray(raw) ? raw : (raw.items ?? raw.Items ?? []);
+                        state.messagesByConversation.set(conversationId, []);
+                        for (const m of history) appendMessage(conversationId, m, { skipScroll: true });
+                        scrollMessagesToBottom();
                   } catch (err) {
-                        console.error('Register error:', err);
-                        statusText.innerText = 'Server error. Is the backend running?';
-                        statusText.style.color = 'red';
+                        addSystemLine(`Could not load message history (${err.message}). Check CONFIG.messagesPath.`);
+                  }
+
+                  await markConversationSeen(conversationId, history);
+
+                  if (convo) {
+                        convo.unreadCount = 0;
+                        renderConversationList();
                   }
             }
 
-            async function login() {
-                  const email = document.getElementById('email').value;
-                  const password = document.getElementById('password').value;
-                  const statusText = document.getElementById('statusText');
-
-                  if (!email || !password) {
-                        statusText.innerText = 'Please enter email and password.';
-                        statusText.style.color = 'red';
-                        return;
-                  }
-
-                  statusText.innerText = 'Connecting...';
-                  statusText.style.color = '#667781';
-
-                  try {
-                        const response = await fetch(`${apiBaseUrl}/api/Account/login`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ email, password })
-                        });
-
-                        if (response.ok) {
-                              const data = await response.json();
-                              jwtToken = data.token;
-                              currentUserId = data.userId || data.id;
-
-                              // Fallback: parse JWT if userId not in response
-                              if (!currentUserId) {
-                                    const decoded = parseJwt(jwtToken);
-                                    currentUserId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
-                                          || decoded.sub || decoded.uid || decoded.nameid;
-                              }
-
-                              if (!currentUserId) {
-                                    statusText.innerText = 'Could not identify user from token.';
-                                    statusText.style.color = 'red';
-                                    return;
-                              }
-
-                              // Hide Login, Show Chat App
-                              document.getElementById('authPanel').style.display = 'none';
-                              const chatApp = document.getElementById('chatApp');
-                              chatApp.classList.add('flex');
-
-                              showToast('Connected successfully!');
-
-                              // Set up UI
-                              const decoded = parseJwt(jwtToken);
-                              currentUserName = decoded?.name || decoded?.unique_name || email;
-                              document.getElementById('myNameDisplay').innerText = currentUserName;
-                              document.getElementById('myAvatarMini').innerText = currentUserName.charAt(0).toUpperCase();
-
-                              await loadUsers();
-                              await connectSignalR();
-                              await loadConversations();
-                        } else {
-                              const errMsg = await response.text();
-                              statusText.innerText = 'Login failed: ' + (errMsg || 'Check credentials.');
-                              statusText.style.color = 'red';
-                        }
-                  } catch (err) {
-                        console.error('Login error:', err);
-                        statusText.innerText = 'Server error. Is the backend running at ' + apiBaseUrl + '?';
-                        statusText.style.color = 'red';
-                  }
-            }
-
-            function logout() {
-                  jwtToken = '';
-                  currentUserId = null;
-                  activeConversationId = null;
-                  if (connection) { connection.stop(); connection = null; }
-                  document.getElementById('chatApp').classList.remove('flex');
-                  document.getElementById('authPanel').style.display = 'block';
-                  document.getElementById('statusText').innerText = 'Logged out.';
-                  document.getElementById('statusText').style.color = '#667781';
-                  document.getElementById('email').value = '';
-                  document.getElementById('password').value = '';
-                  showLogin();
-            }
-
-            // =============================================
-            // USERS
-            // =============================================
-            async function loadUsers() {
-                  if (!jwtToken) return;
-                  try {
-                        const response = await fetch(`${apiBaseUrl}/api/User`, {
-                              headers: { 'Authorization': `Bearer ${jwtToken}` }
-                        });
-                        if (response.ok) {
-                              const users = await response.json();
-                              usersMap = {};
-                              // The UserResponse: { id, name, email, avatar, username, isOnline }
-                              users.forEach(u => { usersMap[u.id] = u; });
-                              console.log('Loaded users:', Object.keys(usersMap).length);
-                        }
-                  } catch (err) {
-                        console.error('Failed to load users:', err);
-                  }
-            }
-
-            function getUserDisplayName(userId) {
-                  const u = usersMap[userId];
-                  return u ? (u.name || u.username || u.email || 'Unknown') : 'Unknown';
-            }
-
-            function getUserAvatar(userId) {
-                  const u = usersMap[userId];
-                  if (u && u.avatar) return u.avatar;
-                  return (u ? (u.name || u.username || '?') : '?').charAt(0).toUpperCase();
-            }
-
-            // =============================================
-            // SIGNALR
-            // =============================================
-            async function connectSignalR() {
-                  if (connection) {
-                        try { await connection.stop(); } catch (e) { }
-                  }
-
-                  connection = new signalR.HubConnectionBuilder()
-                        .withUrl(`${apiBaseUrl}/hubs/chat`, {
-                              accessTokenFactory: () => jwtToken
-                        })
-                        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
-                        .build();
-
-                  // ---------- ReceiveMessage ----------
-                  connection.on('ReceiveMessage', (messageDto) => {
-                        console.log('[SignalR] ReceiveMessage:', messageDto);
-                        // messageDto is MessageResponse: { id, content, userSenderId, conversationId, isText, sendDate, editDate, isSeen }
-                        const convId = messageDto.conversationId;
-                        const isFromMe = messageDto.userSenderId === currentUserId;
-
-                        // Update conversation list last message
-                        updateConversationLastMessage(convId, messageDto.content, messageDto.sendDate);
-
-                        // If we're in the conversation, render it
-                        if (convId === activeConversationId) {
-                              renderMessage(messageDto, isFromMe);
-
-                              // If I sent it in active conversation, mark as seen
-                              if (isFromMe) {
-                                    // Already seen by me
-                              } else {
-                                    // Auto-mark received message as seen in active conversation
-                                    markMessageAsSeen(messageDto.id);
-                              }
-                        } else {
-                              // Increment unread count for this conversation
-                              if (!isFromMe) {
-                                    unreadCounts[convId] = (unreadCounts[convId] || 0) + 1;
-                                    updateConversationUnreadBadge(convId);
-                              }
-                        }
-                  });
-
-                  // ---------- MessageSeen ----------
-                  connection.on('MessageSeen', (messageId, userId) => {
-                        console.log('[SignalR] MessageSeen:', messageId, userId);
-                        // Update the seen indicator on the message bubble
-                        const msgData = messagesMap[messageId];
-                        if (msgData) {
-                              msgData.data.isSeen = true;
-                              updateMessageSeenIndicator(messageId);
-                        }
-                  });
-
-                  // ---------- MessageDeleted ----------
-                  connection.on('MessageDeleted', (messageId) => {
-                        console.log('[SignalR] MessageDeleted:', messageId);
-                        const msgData = messagesMap[messageId];
-                        if (msgData && msgData.element) {
-                              msgData.element.remove();
-                              delete messagesMap[messageId];
-                        }
-                        showToast('A message was deleted');
-                  });
-
-                  // ---------- MessageUpdated ----------
-                  connection.on('MessageUpdated', (messageId, newContent) => {
-                        console.log('[SignalR] MessageUpdated:', messageId, newContent);
-                        const msgData = messagesMap[messageId];
-                        if (msgData && msgData.element) {
-                              // Update the content text
-                              const textSpan = msgData.element.querySelector('.msg-text');
-                              if (textSpan) {
-                                    textSpan.innerText = newContent;
-                              }
-                              msgData.data.content = newContent;
-                              msgData.data.editDate = new Date().toISOString();
-                              // Show edited indicator
-                              const editedSpan = msgData.element.querySelector('.msg-edited');
-                              if (editedSpan) editedSpan.style.display = 'inline';
-                        }
-                  });
-
-                  // ---------- UpdateNotificationCount ----------
-                  connection.on('UpdateNotificationCount', (unreadCount) => {
-                        console.log('[SignalR] UpdateNotificationCount:', unreadCount);
-                        // Could update a global badge
-                  });
-
-                  // ---------- ConversationCreated ----------
-                  connection.on('ConversationCreated', (conversationId) => {
-                        console.log('[SignalR] ConversationCreated:', conversationId);
-                        loadConversations();
-                  });
-
-                  // ---------- ConversationDeleted ----------
-                  connection.on('ConversationDeleted', (conversationId) => {
-                        console.log('[SignalR] ConversationDeleted:', conversationId);
-                        if (activeConversationId === conversationId) {
-                              // Close active conversation
-                              closeActiveConversation();
-                        }
-                        loadConversations();
-                        showToast('Conversation was deleted');
-                  });
-
-                  // ---------- ConversationUpdated ----------
-                  connection.on('ConversationUpdated', (conversationId) => {
-                        console.log('[SignalR] ConversationUpdated:', conversationId);
-                        loadConversations();
-                  });
-
-                  // ---------- Reconnect ----------
-                  connection.onreconnecting((error) => {
-                        console.log('[SignalR] Reconnecting...', error);
-                        showToast('Reconnecting...');
-                  });
-                  connection.onreconnected(async (connectionId) => {
-                        console.log('[SignalR] Reconnected:', connectionId);
-                        showToast('Reconnected!');
-                        // The old connectionId's group memberships are gone after a reconnect —
-                        // rejoin the active conversation's group so messages keep arriving.
-                        if (activeConversationId) {
-                              try {
-                                    await connection.invoke('JoinConversation', activeConversationId);
-                              } catch (err) {
-                                    console.error('Failed to rejoin conversation group after reconnect:', err);
-                              }
-                        }
-                  });
-                  connection.onclose((error) => {
-                        console.log('[SignalR] Connection closed:', error);
-                  });
-
-                  try {
-                        await connection.start();
-                        console.log('[SignalR] Connected successfully.');
-                  } catch (err) {
-                        console.error('[SignalR] Connection failed:', err);
-                  }
-            }
-
-            // =============================================
-            // CONVERSATIONS
-            // =============================================
-            async function loadConversations() {
-                  if (!jwtToken) return;
-
-                  try {
-                        const response = await fetch(`${apiBaseUrl}/api/Conversation`, {
-                              headers: { 'Authorization': `Bearer ${jwtToken}` }
-                        });
-
-                        if (response.ok) {
-                              const conversations = await response.json();
-                              const listDiv = document.getElementById('conversationList');
-                              listDiv.innerHTML = '';
-
-                              conversationsMap = {};
-                              myConversationUserIds = {};
-
-                              // If no conversations
-                              if (!conversations || conversations.length === 0) {
-                                    listDiv.innerHTML = '<div style="text-align:center; padding:30px; color:#667781; font-size:14px;">No conversations yet.<br/>Click ✏️ to start one!</div>';
-                                    return;
-                              }
-
-                              conversations.forEach(conv => {
-                                    conversationsMap[conv.id] = conv;
-
-                                    // Determine title
-                                    const title = conv.title || `Conversation ${conv.id.substring(0, 6)}`;
-
-                                    // Store members except me
-                                    const otherUserIds = (conv.usersId || []).filter(uid => uid !== currentUserId);
-                                    myConversationUserIds[conv.id] = otherUserIds;
-
-                                    // Fallback: if it's a 1-on-1, use the other user's name as title display
-                                    let displayTitle = title;
-                                    if (!conv.title && otherUserIds.length === 1) {
-                                          displayTitle = getUserDisplayName(otherUserIds[0]) || 'User';
-                                    }
-
-                                    // Get last message info (we'll update this when messages load)
-                                    const lastMsg = conv.lastMessage || '';
-
-                                    // Determine avatar letter
-                                    let avatarLetter = displayTitle.charAt(0).toUpperCase();
-                                    if (!conv.title && otherUserIds.length === 1) {
-                                          avatarLetter = getUserAvatar(otherUserIds[0]);
-                                    }
-
-                                    const unread = unreadCounts[conv.id] || 0;
-
-                                    const item = document.createElement('div');
-                                    item.className = 'conversation-item' + (conv.id === activeConversationId ? ' active' : '');
-                                    item.dataset.convId = conv.id;
-                                    item.innerHTML = `
-                                          <div class="avatar">${avatarLetter}</div>
-                                          <div class="conv-details">
-                                                <div class="conv-name">${displayTitle}</div>
-                                                <div class="conv-last-msg" id="lastMsg_${conv.id}">${lastMsg || 'No messages yet'}</div>
-                                          </div>
-                                          <div class="conv-meta">
-                                                <div class="conv-time" id="convTime_${conv.id}"></div>
-                                                ${unread > 0 ? `<div class="unread-badge" id="unread_${conv.id}">${unread}</div>` : `<div class="unread-badge" id="unread_${conv.id}" style="display:none;"></div>`}
-                                          </div>
-                                    `;
-
-                                    item.onclick = () => selectConversation(conv.id);
-                                    listDiv.appendChild(item);
-                              });
-                        } else if (response.status === 401) {
-                              showToast('Session expired. Please log in again.');
-                              logout();
-                        }
-                  } catch (err) {
-                        console.error('Failed to load conversations:', err);
-                        document.getElementById('conversationList').innerHTML = '<div style="text-align:center; padding:30px; color:red;">Failed to load conversations.</div>';
-                  }
-            }
-
-            function updateConversationLastMessage(convId, text, timestamp) {
-                  const lastMsgEl = document.getElementById(`lastMsg_${convId}`);
-                  if (lastMsgEl) {
-                        lastMsgEl.innerText = text || '...';
-                  }
-                  const timeEl = document.getElementById(`convTime_${convId}`);
-                  if (timeEl && timestamp) {
-                        timeEl.innerText = formatTime(timestamp);
-                  }
-            }
-
-            function updateConversationUnreadBadge(convId) {
-                  const badge = document.getElementById(`unread_${convId}`);
-                  const count = unreadCounts[convId] || 0;
-                  if (badge) {
-                        if (count > 0) {
-                              badge.style.display = 'flex';
-                              badge.innerText = count;
-                        } else {
-                              badge.style.display = 'none';
-                        }
-                  }
-            }
-
-            function filterConversations() {
-                  const q = document.getElementById('convSearch').value.toLowerCase();
-                  document.querySelectorAll('.conversation-item').forEach(item => {
-                        const name = item.querySelector('.conv-name')?.innerText?.toLowerCase() || '';
-                        item.style.display = name.includes(q) ? 'flex' : 'none';
-                  });
-            }
-
-            // =============================================
-            // SELECT CONVERSATION
-            // =============================================
-            async function selectConversation(convId) {
-                  if (!convId) return;
-
-                  // Leave the previously active conversation's SignalR group before
-                  // joining the new one, so we don't keep receiving pushes for chats
-                  // we're no longer viewing.
-                  if (activeConversationId && activeConversationId !== convId &&
-                        connection?.state === signalR.HubConnectionState.Connected) {
-                        try {
-                              await connection.invoke('LeaveConversation', activeConversationId);
-                        } catch (err) {
-                              console.error('Failed to leave previous conversation group:', err);
-                        }
-                  }
-
-                  // Clear unread for this conversation
-                  unreadCounts[convId] = 0;
-                  updateConversationUnreadBadge(convId);
-
-                  // Update active state in sidebar
-                  document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
-                  const activeItem = document.querySelector(`.conversation-item[data-conv-id="${convId}"]`);
-                  if (activeItem) activeItem.classList.add('active');
-
-                  activeConversationId = convId;
-
-                  // Join this conversation's SignalR group — without this, ReceiveMessage
-                  // will never fire for messages sent here (the server only broadcasts
-                  // to connections that previously called JoinConversation for this id).
-                  if (connection?.state === signalR.HubConnectionState.Connected) {
-                        try {
-                              await connection.invoke('JoinConversation', convId);
-                        } catch (err) {
-                              console.error('Failed to join conversation group:', err);
-                              showToast('Could not subscribe to live updates for this chat');
-                        }
-                  }
-
-                  // Get conversation data
-                  const conv = conversationsMap[convId];
-                  const otherUserIds = myConversationUserIds[convId] || [];
-
-                  // Determine title
-                  let title = conv?.title || 'Conversation';
-                  if (!conv?.title && otherUserIds.length === 1) {
-                        title = getUserDisplayName(otherUserIds[0]) || 'User';
-                  }
-
-                  // Set active chat visible
-                  document.getElementById('noChatSelected').style.display = 'none';
-                  document.getElementById('activeChat').style.display = 'flex';
-
-                  // Update header
-                  const avatarLetter = title.charAt(0).toUpperCase();
-                  document.getElementById('activeConvAvatar').innerText = avatarLetter;
-                  document.getElementById('activeConvName').innerText = title;
-
-                  const memberCount = (conv?.usersId?.length || 0);
-                  document.getElementById('activeConvStatus').innerText = memberCount > 0 ? `${memberCount} members` : '';
-
-                  // Clear & load messages
-                  const historyDiv = document.getElementById('messageHistory');
-                  historyDiv.innerHTML = '<div class="empty-chat">Loading messages...</div>';
-
-                  // Clear local message map for fresh load
-                  messagesMap = {};
-
-                  try {
-                        const response = await fetch(`${apiBaseUrl}/api/Message/conversation/${convId}?pageNumber=1&pageSize=100`, {
-                              headers: { 'Authorization': `Bearer ${jwtToken}` }
-                        });
-
-                        if (response.ok) {
-                              const messages = await response.json();
-                              historyDiv.innerHTML = '';
-
-                              if (!messages || messages.length === 0) {
-                                    historyDiv.innerHTML = '<div class="empty-chat">No messages yet. Say hello! 👋</div>';
-                                    return;
-                              }
-
-                              // Messages are returned as a flat array of MessageResponse
-                              messages.forEach(msg => {
-                                    const isSent = msg.userSenderId === currentUserId;
-                                    renderMessage(msg, isSent);
-                              });
-
-                              // Auto-mark unread messages as seen
-                              const unreadMessages = messages.filter(m => m.userSenderId !== currentUserId && !m.isSeen);
-                              unreadMessages.forEach(m => markMessageAsSeen(m.id));
-
-                        } else {
-                              historyDiv.innerHTML = '<div class="empty-chat" style="color:red;">Failed to load messages</div>';
-                        }
-                  } catch (err) {
-                        historyDiv.innerHTML = '<div class="empty-chat" style="color:red;">Error loading messages</div>';
-                        console.error('Error loading messages:', err);
-                  }
-
-                  // Focus on input
-                  document.getElementById('messageInput').focus();
-            }
-
-            function closeActiveConversation() {
-                  activeConversationId = null;
-                  document.getElementById('noChatSelected').style.display = 'flex';
-                  document.getElementById('activeChat').style.display = 'none';
-                  document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
-                  messagesMap = {};
-            }
-
-            // =============================================
-            // MARK MESSAGE AS SEEN
-            // =============================================
-            async function markMessageAsSeen(messageId) {
-                  if (!messageId || !jwtToken || !currentUserId) return;
-                  try {
-                        await fetch(`${apiBaseUrl}/api/Message/${messageId}/seen?userId=${currentUserId}`, {
+            /* ================================================================
+               MARK SEEN — your API tracks seen state per-message (PATCH
+               /api/Message/{conversationId}/{messageId}/seen), so "marking a
+               conversation read" means calling it once per unseen message from
+               someone else. UnreadCountChanged pushes should keep other devices
+               in sync once each call lands.
+               ================================================================ */
+            async function markConversationSeen(conversationId, messages) {
+                  const unseenFromOthers = messages.filter(m => (m.userSenderId ?? m.UserSenderId ?? m.senderId ?? m.SenderId) !== state.userId);
+                  await Promise.all(unseenFromOthers.map(m => {
+                        const messageId = m.id ?? m.Id;
+                        return authedFetch(CONFIG.markSeenPath(conversationId, messageId, state.userId), {
                               method: 'PATCH',
-                              headers: { 'Authorization': `Bearer ${jwtToken}` }
-                        });
+                        }).catch(() => { /* already seen or race with another tab — non-fatal */ });
+                  }));
+            }
+
+            /* ================================================================
+               CATCH-UP — GetMessagesSince via the hub
+               ================================================================ */
+            el.catchUpBtn.addEventListener('click', () => {
+                  if (state.activeConversationId) fetchMissedMessages(state.activeConversationId);
+            });
+
+            /* ================================================================
+               DELETE CONVERSATION — DELETE /api/Conversation/{id}
+               ================================================================ */
+            el.deleteConvoBtn.addEventListener('click', async () => {
+                  const conversationId = state.activeConversationId;
+                  if (!conversationId) return;
+
+                  const convo = state.conversations.get(conversationId);
+                  if (!confirm(`Delete "${convo?.title ?? conversationId}"? This can't be undone.`)) return;
+
+                  try {
+                        await authedFetch(CONFIG.deleteConversationPath(conversationId), { method: 'DELETE' });
+
+                        state.conversations.delete(conversationId);
+                        state.messagesByConversation.delete(conversationId);
+                        state.activeConversationId = null;
+
+                        renderConversationList();
+                        el.chatTitle.textContent = 'No conversation selected';
+                        el.chatSub.textContent = '';
+                        el.catchUpBtn.style.display = 'none';
+                        el.deleteConvoBtn.style.display = 'none';
+                        el.messageInput.disabled = true;
+                        el.sendBtn.disabled = true;
+                        el.messages.innerHTML = `<div class="center-placeholder">Select a conversation from the left, or create a new one.</div>`;
                   } catch (err) {
-                        console.error('Failed to mark as seen:', err);
+                        alert(`Delete failed: ${err.message}. Check CONFIG.deleteConversationPath.`);
+                  }
+            });
+
+            async function fetchMissedMessages(conversationId) {
+                  const existing = state.messagesByConversation.get(conversationId) ?? [];
+                  const since = existing.length > 0
+                        ? (existing[existing.length - 1].sendDate ?? existing[existing.length - 1].SendDate ?? existing[existing.length - 1].sentAt)
+                        : new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+                  try {
+                        const missed = await state.connection.invoke('GetMessagesSince', conversationId, since);
+                        addSystemLine(`${missed.length} message(s) fetched since ${new Date(since).toLocaleTimeString()}`);
+                        for (const m of missed) appendMessage(conversationId, m);
+                  } catch (err) {
+                        addSystemLine(`GetMessagesSince failed: ${err.message}`);
                   }
             }
 
-            // =============================================
-            // SEND MESSAGE
-            // =============================================
+            /* ================================================================
+               SENDING MESSAGES
+               ================================================================ */
+            el.sendBtn.addEventListener('click', sendMessage);
+            el.messageInput.addEventListener('keydown', (e) => {
+                  if (e.key === 'Enter') sendMessage();
+            });
+
             async function sendMessage() {
-                  const input = document.getElementById('messageInput');
-                  const text = input.value.trim();
-                  if (!text || !activeConversationId || !jwtToken) return;
+                  const content = el.messageInput.value.trim();
+                  if (!content || !state.activeConversationId) return;
 
-                  input.value = '';
-                  document.getElementById('sendBtn').disabled = true;
+                  const conversationId = state.activeConversationId;
+                  el.messageInput.value = '';
 
-                  const payload = {
-                        ConversationId: activeConversationId,
-                        Content: text,
-                        UserSenderId: currentUserId,
-                        IsText: true
+                  // No optimistic bubble here on purpose. Now that MessageResponse.ConversationId
+                  // is set server-side, the sender is also in the conversation's SignalR group
+                  // and receives their own message back via ReceiveMessage — rendering it
+                  // optimistically AND on push was exactly what caused messages to appear twice.
+                  try {
+                        // Matches CreateMessageCommand(Guid ConversationId, string Content,
+                        // Guid UserSenderId, bool IsText) exactly — isText is true for a
+                        // normal text message.
+                        await authedFetch(CONFIG.createMessagePath(), {
+                              method: 'POST',
+                              body: JSON.stringify({
+                                    conversationId,
+                                    content,
+                                    userSenderId: state.userId,
+                                    isText: true,
+                              }),
+                        });
+                  } catch (err) {
+                        addSystemLine(`Send failed: ${err.message}. Check CONFIG.createMessagePath.`);
+                  }
+            }
+
+            /* ================================================================
+               RENDERING
+               ================================================================ */
+            function appendMessage(conversationId, msg, opts = {}) {
+                  if (conversationId !== state.activeConversationId) {
+                        // Message for a background conversation — bump its badge instead
+                        // of rendering (server-side UnreadCountChanged should also do this,
+                        // this is just an optimistic fallback).
+                        const convo = state.conversations.get(conversationId);
+                        if (convo) {
+                              convo.unreadCount = (convo.unreadCount || 0) + 1;
+                              renderConversationList();
+                        }
+                        return;
+                  }
+
+                  const list = state.messagesByConversation.get(conversationId) ?? [];
+                  list.push(msg);
+                  state.messagesByConversation.set(conversationId, list);
+
+                  if (el.messages.querySelector('.center-placeholder')) el.messages.innerHTML = '';
+
+                  const senderId = msg.userSenderId ?? msg.UserSenderId ?? msg.senderId ?? msg.SenderId;
+                  const isMine = senderId === state.userId;
+                  const sentAt = msg.sendDate ?? msg.SendDate ?? msg.sentAt ?? msg.SentAt;
+                  const messageId = msg.id ?? msg.Id;
+
+                  const bubble = document.createElement('div');
+                  bubble.className = 'msg' + (isMine ? ' mine' : '');
+                  bubble.dataset.messageId = messageId ?? '';
+                  bubble.innerHTML = `
+    ${isMine && messageId ? `
+      <div class="msg-actions">
+        <button class="edit-msg-btn" title="Edit">✎</button>
+        <button class="delete-msg-btn" title="Delete">🗑</button>
+      </div>` : ''}
+    <span class="msg-content">${escapeHtml(msg.content ?? msg.Content ?? '')}</span>
+    <span class="meta">${isMine ? 'you' : senderId?.slice(0, 8)} · ${new Date(sentAt).toLocaleTimeString()}</span>
+  `;
+
+                  if (isMine && messageId) {
+                        bubble.querySelector('.edit-msg-btn').addEventListener('click', () => enterEditMode(bubble, conversationId, messageId));
+                        bubble.querySelector('.delete-msg-btn').addEventListener('click', () => deleteMessage(bubble, conversationId, messageId));
+                  }
+
+                  el.messages.appendChild(bubble);
+
+                  if (!opts.skipScroll) scrollMessagesToBottom();
+            }
+
+            /* ================================================================
+               EDIT MESSAGE — PUT /api/Message/{id}
+               ================================================================ */
+            function enterEditMode(bubble, conversationId, messageId) {
+                  const contentEl = bubble.querySelector('.msg-content');
+                  const currentText = contentEl.textContent;
+
+                  bubble.classList.add('editing');
+                  bubble.innerHTML = `
+    <div class="msg-edit-row">
+      <input type="text" class="edit-input" value="${currentText.replace(/"/g, '&quot;')}" />
+      <button class="save-edit-btn primary">Save</button>
+      <button class="cancel-edit-btn">✕</button>
+    </div>
+  `;
+
+                  const input = bubble.querySelector('.edit-input');
+                  input.focus();
+                  input.select();
+
+                  const cancel = () => {
+                        // Re-render this single message from its last known state rather than
+                        // reloading the whole conversation.
+                        const list = state.messagesByConversation.get(conversationId) ?? [];
+                        const msg = list.find(m => (m.id ?? m.Id) === messageId);
+                        if (msg) rerenderSingleMessage(bubble, conversationId, msg);
                   };
 
-                  try {
-                        const response = await fetch(`${apiBaseUrl}/api/Message`, {
-                              method: 'POST',
-                              headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${jwtToken}`
-                              },
-                              body: JSON.stringify(payload)
-                        });
+                  bubble.querySelector('.cancel-edit-btn').addEventListener('click', cancel);
+                  input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') cancel();
+                        if (e.key === 'Enter') save();
+                  });
 
-                        if (!response.ok) {
-                              const errText = await response.text();
-                              console.error('Failed to send message:', errText);
-                              showToast('Failed to send message');
+                  const save = async () => {
+                        const newContent = input.value.trim();
+                        if (!newContent) return;
+
+                        try {
+                              // UpdateMessageCommand's exact shape is a guess — { messageId, content } —
+                              // matching the controller's `if (id != command.MessageId)` check.
+                              await authedFetch(CONFIG.updateMessagePath(messageId), {
+                                    method: 'PUT',
+                                    body: JSON.stringify({ messageId, content: newContent }),
+                              });
+
+                              const list = state.messagesByConversation.get(conversationId) ?? [];
+                              const msg = list.find(m => (m.id ?? m.Id) === messageId);
+                              if (msg) {
+                                    msg.content = newContent;
+                                    msg.edited = true;
+                                    rerenderSingleMessage(bubble, conversationId, msg);
+                              }
+                        } catch (err) {
+                              addSystemLine(`Edit failed: ${err.message}. Check CONFIG.updateMessagePath and UpdateMessageCommand's field names.`);
+                              cancel();
                         }
-                        // Message will appear via SignalR real-time
-                  } catch (err) {
-                        console.error('Send error:', err);
-                        showToast('Network error sending message');
-                  } finally {
-                        document.getElementById('sendBtn').disabled = false;
-                        input.focus();
+                  };
+
+                  bubble.querySelector('.save-edit-btn').addEventListener('click', save);
+            }
+
+            function rerenderSingleMessage(bubble, conversationId, msg) {
+                  const senderId = msg.userSenderId ?? msg.UserSenderId ?? msg.senderId ?? msg.SenderId;
+                  const isMine = senderId === state.userId;
+                  const sentAt = msg.sendDate ?? msg.SendDate ?? msg.sentAt ?? msg.SentAt;
+                  const messageId = msg.id ?? msg.Id;
+
+                  bubble.className = 'msg' + (isMine ? ' mine' : '');
+                  bubble.innerHTML = `
+    ${isMine && messageId ? `
+      <div class="msg-actions">
+        <button class="edit-msg-btn" title="Edit">✎</button>
+        <button class="delete-msg-btn" title="Delete">🗑</button>
+      </div>` : ''}
+    <span class="msg-content">${escapeHtml(msg.content ?? msg.Content ?? '')}</span>
+    <span class="meta">${isMine ? 'you' : senderId?.slice(0, 8)} · ${new Date(sentAt).toLocaleTimeString()}${msg.edited ? ' · <span class="edited-tag">edited</span>' : ''}</span>
+  `;
+
+                  if (isMine && messageId) {
+                        bubble.querySelector('.edit-msg-btn').addEventListener('click', () => enterEditMode(bubble, conversationId, messageId));
+                        bubble.querySelector('.delete-msg-btn').addEventListener('click', () => deleteMessage(bubble, conversationId, messageId));
                   }
             }
 
-            function handleEnter(e) {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                  }
-            }
-
-            // =============================================
-            // UPDATE MESSAGE (Edit)
-            // =============================================
-            async function editMessage(messageId) {
-                  const msgData = messagesMap[messageId];
-                  if (!msgData) return;
-
-                  const currentText = msgData.data.content;
-                  const newText = prompt('Edit message:', currentText);
-                  if (!newText || newText.trim() === '' || newText.trim() === currentText) return;
-
-                  try {
-                        const response = await fetch(`${apiBaseUrl}/api/Message/${messageId}`, {
-                              method: 'PUT',
-                              headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${jwtToken}`
-                              },
-                              body: JSON.stringify({ messageId, content: newText.trim() })
-                        });
-
-                        if (!response.ok) {
-                              showToast('Failed to edit message');
-                        }
-                        // UI updates come via SignalR
-                  } catch (err) {
-                        console.error('Edit error:', err);
-                        showToast('Network error editing message');
-                  }
-            }
-
-            // =============================================
-            // DELETE MESSAGE
-            // =============================================
-            async function deleteMessage(messageId) {
+            /* ================================================================
+               DELETE MESSAGE — DELETE /api/Message/{id}
+               ================================================================ */
+            async function deleteMessage(bubble, conversationId, messageId) {
                   if (!confirm('Delete this message?')) return;
 
                   try {
-                        const response = await fetch(`${apiBaseUrl}/api/Message/${messageId}`, {
-                              method: 'DELETE',
-                              headers: { 'Authorization': `Bearer ${jwtToken}` }
-                        });
+                        await authedFetch(CONFIG.deleteMessagePath(messageId), { method: 'DELETE' });
 
-                        if (!response.ok) {
-                              showToast('Failed to delete message');
-                        }
-                        // UI updates come via SignalR
+                        const list = state.messagesByConversation.get(conversationId) ?? [];
+                        state.messagesByConversation.set(conversationId, list.filter(m => (m.id ?? m.Id) !== messageId));
+
+                        bubble.remove();
                   } catch (err) {
-                        console.error('Delete error:', err);
-                        showToast('Network error deleting message');
+                        addSystemLine(`Delete failed: ${err.message}. Check CONFIG.deleteMessagePath.`);
                   }
             }
 
-            // =============================================
-            // RENDER MESSAGE
-            // =============================================
-            function renderMessage(msg, isSentByMe) {
-                  const historyDiv = document.getElementById('messageHistory');
-
-                  // Remove empty state if present
-                  const empty = historyDiv.querySelector('.empty-chat');
-                  if (empty) empty.remove();
-
-                  const msgId = msg.id;
-                  const content = msg.content || '[Empty]';
-                  const sendDate = msg.sendDate || new Date().toISOString();
-                  const isEdited = msg.editDate && msg.editDate !== sendDate;
-                  const isSeen = msg.isSeen || false;
-                  const senderId = msg.userSenderId;
-
-                  const wrapper = document.createElement('div');
-                  wrapper.className = `message-wrapper ${isSentByMe ? 'sent' : 'received'}`;
-                  wrapper.dataset.msgId = msgId;
-
-                  // For received messages, show sender name if group or conversation with >2 members
-                  const conv = conversationsMap[activeConversationId];
-                  const isGroup = conv && (conv.usersId?.length || 0) > 2;
-                  if (!isSentByMe && isGroup) {
-                        const senderSpan = document.createElement('div');
-                        senderSpan.className = 'sender-name';
-                        senderSpan.innerText = getUserDisplayName(senderId);
-                        wrapper.appendChild(senderSpan);
-                  }
-
-                  const bubble = document.createElement('div');
-                  bubble.className = 'message';
-
-                  bubble.innerHTML = `
-                        <span class="msg-text">${escapeHtml(content)}</span>
-                        <div class="msg-footer">
-                              ${isEdited ? `<span class="msg-edited">edited</span>` : ''}
-                              <span class="msg-time">${formatTime(sendDate)}</span>
-                              ${isSentByMe ? `<span class="msg-seen ${isSeen ? 'seen-by-all' : ''}">${isSeen ? '✓✓' : '✓'}</span>` : ''}
-                        </div>
-                        ${isSentByMe ? `
-                              <div class="msg-actions-overlay">
-                                    <button onclick="editMessage('${msgId}')" title="Edit">✏️</button>
-                                    <button onclick="deleteMessage('${msgId}')" title="Delete">🗑️</button>
-                              </div>
-                        ` : ''}
-                  `;
-
-                  wrapper.appendChild(bubble);
-                  historyDiv.appendChild(wrapper);
-                  historyDiv.scrollTop = historyDiv.scrollHeight;
-
-                  // Store reference
-                  messagesMap[msgId] = {
-                        element: wrapper,
-                        data: { ...msg, isSeen }
-                  };
+            function addSystemLine(text) {
+                  const line = document.createElement('div');
+                  line.className = 'system-line';
+                  line.textContent = text;
+                  el.messages.appendChild(line);
+                  scrollMessagesToBottom();
             }
 
-            function updateMessageSeenIndicator(messageId) {
-                  const msgData = messagesMap[messageId];
-                  if (!msgData || !msgData.element) return;
-
-                  const seenSpan = msgData.element.querySelector('.msg-seen');
-                  if (seenSpan) {
-                        seenSpan.className = 'msg-seen seen-by-all';
-                        seenSpan.innerText = '✓✓';
-                  }
-            }
-
-            // =============================================
-            // CREATE CONVERSATION
-            // =============================================
-            function showNewConversationModal() {
-                  const modal = document.getElementById('newConvModal');
-                  modal.classList.add('show');
-
-                  // Reset form
-                  document.getElementById('convTitle').value = '';
-                  document.getElementById('convDescription').value = '';
-                  document.getElementById('createConvBtn').disabled = true;
-
-                  // Load member list
-                  const memberListDiv = document.getElementById('memberList');
-                  memberListDiv.innerHTML = '<div style="color:#667781;">Loading users...</div>';
-
-                  // Populate from loaded users
-                  const userIds = Object.keys(usersMap);
-                  if (userIds.length === 0) {
-                        // Try loading users
-                        loadUsers().then(() => populateMemberList(memberListDiv));
-                  } else {
-                        populateMemberList(memberListDiv);
-                  }
-            }
-
-            function populateMemberList(container) {
-                  const userIds = Object.keys(usersMap).filter(uid => uid !== currentUserId);
-                  if (userIds.length === 0) {
-                        container.innerHTML = '<div style="color:#667781;">No other users found.</div>';
-                        return;
-                  }
-
-                  container.innerHTML = '';
-                  userIds.forEach(uid => {
-                        const user = usersMap[uid];
-                        const name = user.name || user.username || user.email || 'Unknown';
-                        const avatar = name.charAt(0).toUpperCase();
-
-                        const option = document.createElement('div');
-                        option.className = 'member-option';
-                        option.innerHTML = `
-                              <input type="checkbox" value="${uid}" class="member-checkbox" />
-                              <div class="member-avatar">${avatar}</div>
-                              <div>
-                                    <div style="font-weight:500; font-size:14px;">${escapeHtml(name)}</div>
-                                    <div style="font-size:12px; color:#667781;">${user.email || ''}</div>
-                              </div>
-                        `;
-                        const checkbox = option.querySelector('.member-checkbox');
-                        checkbox.addEventListener('change', () => {
-                              const checked = document.querySelectorAll('.member-checkbox:checked').length;
-                              document.getElementById('createConvBtn').disabled = checked === 0;
-                        });
-                        container.appendChild(option);
-                  });
-            }
-
-            async function createConversation() {
-                  const title = document.getElementById('convTitle').value.trim();
-                  const description = document.getElementById('convDescription').value.trim();
-                  const selectedMembers = Array.from(document.querySelectorAll('.member-checkbox:checked')).map(cb => cb.value);
-
-                  if (selectedMembers.length === 0) {
-                        showToast('Please select at least one member.');
-                        return;
-                  }
-
-                  document.getElementById('createConvBtn').disabled = true;
-
-                  // Include current user in members list
-                  const allMembers = [...selectedMembers, currentUserId];
-                  const isGroup = allMembers.length > 2 || title.length > 0;
-
-                  const payload = {
-                        CreatorId: currentUserId,
-                        Title: title || '',
-                        Description: description || '',
-                        IsGroup: isGroup,
-                        ProfilePictureUrl: '',
-                        UsersId: allMembers,
-                        MessageId: '00000000-0000-0000-0000-000000000000'
-                  };
-
-                  try {
-                        const response = await fetch(`${apiBaseUrl}/api/Conversation`, {
-                              method: 'POST',
-                              headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${jwtToken}`
-                              },
-                              body: JSON.stringify(payload)
-                        });
-
-                        if (response.ok) {
-                              showToast('Conversation created!');
-                              closeModal('newConvModal');
-                              await loadConversations();
-                        } else {
-                              const err = await response.text();
-                              showToast('Failed: ' + (err || 'Unknown error'));
-                              document.getElementById('createConvBtn').disabled = false;
-                        }
-                  } catch (err) {
-                        console.error('Create conversation error:', err);
-                        showToast('Network error creating conversation');
-                        document.getElementById('createConvBtn').disabled = false;
-                  }
-            }
-
-            // =============================================
-            // CONVERSATION INFO
-            // =============================================
-            function showConversationInfo() {
-                  if (!activeConversationId) return;
-                  const conv = conversationsMap[activeConversationId];
-                  if (!conv) return;
-
-                  const otherUserIds = myConversationUserIds[activeConversationId] || [];
-                  let info = `Members (${conv.usersId?.length || 0}):\n`;
-                  (conv.usersId || []).forEach(uid => {
-                        const name = getUserDisplayName(uid);
-                        const isMe = uid === currentUserId;
-                        info += `  • ${name}${isMe ? ' (you)' : ''}\n`;
-                  });
-
-                  if (conv.description) {
-                        info += `\nDescription: ${conv.description}`;
-                  }
-
-                  alert(info);
-            }
-
-            // =============================================
-            // MODAL UTILITIES
-            // =============================================
-            function closeModal(id) {
-                  document.getElementById(id).classList.remove('show');
-            }
-
-            // =============================================
-            // TOAST
-            // =============================================
-            let toastTimeout = null;
-            function showToast(msg) {
-                  const toast = document.getElementById('toast');
-                  toast.innerText = msg;
-                  toast.classList.add('show');
-                  if (toastTimeout) clearTimeout(toastTimeout);
-                  toastTimeout = setTimeout(() => {
-                        toast.classList.remove('show');
-                  }, 3000);
-            }
-
-            // =============================================
-            // UTILITY FUNCTIONS
-            // =============================================
-            function formatTime(dateStr) {
-                  if (!dateStr) return '';
-                  const d = new Date(dateStr);
-                  if (isNaN(d.getTime())) return '';
-                  const now = new Date();
-                  const isToday = d.toDateString() === now.toDateString();
-                  if (isToday) {
-                        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  }
-                  const yesterday = new Date(now);
-                  yesterday.setDate(yesterday.getDate() - 1);
-                  if (d.toDateString() === yesterday.toDateString()) {
-                        return 'Yesterday ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  }
-                  return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
-                        d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            function scrollMessagesToBottom() {
+                  el.messages.scrollTop = el.messages.scrollHeight;
             }
 
             function escapeHtml(str) {
-                  const div = document.createElement('div');
-                  div.appendChild(document.createTextNode(str));
-                  return div.innerHTML;
+                  const d = document.createElement('div');
+                  d.textContent = str;
+                  return d.innerHTML;
             }
 
-            console.log('KalemnyShokran Frontend Loaded');
-            console.log('API Base URL:', apiBaseUrl);
+            /* ================================================================
+               NEW CONVERSATION MODAL — pick a user from the real user list
+               instead of typing a raw Guid.
+               ================================================================ */
+            el.newConvoBtn.addEventListener('click', async () => {
+                  el.modalBackdrop.classList.add('open');
+                  state.selectedOtherUserId = null;
+                  el.createConvoBtn.disabled = true;
+
+                  if (state.allUsers.length === 0) {
+                        try {
+                              const raw = await authedFetch(CONFIG.usersListPath());
+                              const users = Array.isArray(raw) ? raw : (raw.items ?? raw.Items ?? []);
+                              state.allUsers = users
+                                    .map(u => ({
+                                          id: u.id ?? u.Id,
+                                          name: u.displayName ?? u.DisplayName ?? u.username ?? u.Username ?? u.email ?? u.Email ?? '(unnamed)',
+                                    }))
+                                    .filter(u => u.id && u.id !== state.userId); // don't let you start a chat with yourself
+                        } catch (err) {
+                              el.userPickerList.innerHTML = `<div class="empty-hint">Could not load users (${err.message}). Check CONFIG.usersListPath.</div>`;
+                              return;
+                        }
+                  }
+                  renderUserPicker(state.allUsers);
+            });
+
+            el.userSearchInput.addEventListener('input', () => {
+                  const q = el.userSearchInput.value.trim().toLowerCase();
+                  const filtered = q
+                        ? state.allUsers.filter(u => u.name.toLowerCase().includes(q))
+                        : state.allUsers;
+                  renderUserPicker(filtered);
+            });
+
+            function renderUserPicker(users) {
+                  if (users.length === 0) {
+                        el.userPickerList.innerHTML = `<div class="empty-hint">No matching users.</div>`;
+                        return;
+                  }
+                  el.userPickerList.innerHTML = '';
+                  for (const u of users) {
+                        const row = document.createElement('div');
+                        row.className = 'user-picker-row' + (u.id === state.selectedOtherUserId ? ' selected' : '');
+                        row.innerHTML = `<span>${escapeHtml(u.name)}</span><span class="uid">${u.id.slice(0, 8)}…</span>`;
+                        row.addEventListener('click', () => {
+                              state.selectedOtherUserId = u.id;
+                              el.createConvoBtn.disabled = false;
+                              renderUserPicker(users); // re-render to move the 'selected' highlight
+                        });
+                        el.userPickerList.appendChild(row);
+                  }
+            }
+
+            el.cancelModalBtn.addEventListener('click', () => el.modalBackdrop.classList.remove('open'));
+
+            el.createConvoBtn.addEventListener('click', async () => {
+                  const otherUserId = state.selectedOtherUserId;
+                  if (!otherUserId) return;
+
+                  try {
+                        // Not using authedFetch here because the response body is just the
+                        // echoed CreateConversationCommand (see CreateConversation's
+                        // CreatedAtAction call) — the real new id only shows up in the
+                        // Location header, so we need the raw Response to read it.
+                        const res = await fetch(CONFIG.apiBaseUrl + CONFIG.createConversationPath(), {
+                              method: 'POST',
+                              headers: {
+                                    'Authorization': `Bearer ${state.token}`,
+                                    'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                    creatorId: state.userId,
+                                    title: el.convoTitleInput.value.trim() || null,
+                                    description: el.convoDescriptionInput.value.trim(),       // '' if left blank — command requires a non-null string
+                                    isGroup: false,
+                                    profilePictureUrl: el.convoProfilePictureInput.value.trim(), // same
+                                    usersId: [otherUserId],
+                                    messageId: crypto.randomUUID(),
+                              }),
+                        });
+
+                        if (!res.ok) {
+                              const text = await res.text().catch(() => '');
+                              throw new Error(`${CONFIG.createConversationPath()} failed (${res.status})${text ? ` — ${text}` : ''}`);
+                        }
+
+                        const location = res.headers.get('Location') || res.headers.get('location');
+                        const match = location?.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/);
+                        const conversationId = match ? match[0] : null;
+
+                        el.modalBackdrop.classList.remove('open');
+                        el.userSearchInput.value = '';
+                        el.convoTitleInput.value = '';
+                        el.convoDescriptionInput.value = '';
+                        el.convoProfilePictureInput.value = '';
+                        state.selectedOtherUserId = null;
+
+                        if (conversationId) {
+                              // Best-effort immediate placeholder, in case Location was readable.
+                              await refreshSingleConversation(conversationId);
+                        }
+
+                        // The reliable path: reload the conversation list from the server.
+                        // We can't count on reading the Location header here — cross-origin
+                        // fetch() only exposes a small safe-list of response headers unless
+                        // the server adds `Location` to Access-Control-Expose-Headers, so
+                        // res.headers.get('Location') is likely null in this setup. Refetching
+                        // the list is what actually guarantees the new conversation shows up
+                        // without the user having to reload the page.
+                        await loadConversations();
+                  } catch (err) {
+                        alert(`Create failed: ${err.message}`);
+                  }
+            });
       </script>
 </body>
 

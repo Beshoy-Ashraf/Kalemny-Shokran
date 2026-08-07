@@ -17,7 +17,7 @@ public class GetMessageByIdQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
 
             var messageSeen = await unitOfWork.MessageRepository.GetMessageWithSeenReceiptsAsync(request.Id, cancellationToken);
 
-            var response = new MessageResponse(message)
+            var response = new MessageResponse(message, message.ConversationMessages.FirstOrDefault()?.ConversationId ?? Guid.Empty)
             {
                   ConversationId = message.ConversationMessages.FirstOrDefault()?.ConversationId ?? Guid.Empty,
                   IsSeen = messageSeen != null

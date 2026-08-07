@@ -31,10 +31,10 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return Ok(result);
       }
-      [HttpGet]
-      public async Task<IActionResult> GetAllMessages(CancellationToken cancellationToken)
+      [HttpGet("getConversationMessage/{conversationId:guid}")]
+      public async Task<IActionResult> GetAllMessages([FromRoute] Guid conversationId, CancellationToken cancellationToken)
       {
-            var query = new GetMessagesQuery();
+            var query = new GetMessagesQuery(conversationId, 1, 10);
             var result = await mediator.Send(query, cancellationToken);
 
             return Ok(result);
@@ -79,10 +79,10 @@ public class MessageController(IMediator mediator) : ControllerBase
             var result = await mediator.Send(query, cancellationToken);
             return Ok(result);
       }
-      [HttpPatch("{messageId:guid}/seen")]
-      public async Task<IActionResult> MarkMessageAsSeen(Guid messageId, [FromQuery] Guid userId, CancellationToken cancellationToken)
+      [HttpPatch("{conversationId:guid}/{messageId:guid}/seen")]
+      public async Task<IActionResult> MarkMessageAsSeen(Guid ConversationId, Guid messageId, [FromQuery] Guid userId, CancellationToken cancellationToken)
       {
-            var command = new MarkMessageAsSeenCommand(messageId, userId);
+            var command = new MarkMessageAsSeenCommand(ConversationId, messageId, userId);
             await mediator.Send(command, cancellationToken);
 
             return NoContent();
@@ -97,9 +97,9 @@ public class MessageController(IMediator mediator) : ControllerBase
       }
 
       [HttpGet("conversation/{conversationId:guid}/since")]
-      public async Task<IActionResult> GetMessagesSince(Guid conversationId, [FromQuery] Guid userId, [FromQuery] DateTimeOffset since, [FromQuery] int take = 100, CancellationToken cancellationToken = default)
+      public async Task<IActionResult> GetMessagesSince(Guid conversationId, [FromQuery] Guid userId, [FromQuery] DateTimeOffset since, CancellationToken cancellationToken = default)
       {
-            var query = new GetMessagesSinceQuery(conversationId, userId, since, take);
+            var query = new GetMessagesSinceQuery(conversationId, userId, since);
             var result = await mediator.Send(query, cancellationToken);
 
             return Ok(result);

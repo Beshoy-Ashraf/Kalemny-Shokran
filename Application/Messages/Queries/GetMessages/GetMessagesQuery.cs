@@ -3,4 +3,4 @@ using MediatR;
 
 namespace Application.Messages.Queries.GetMessages;
 
-public sealed record GetMessagesQuery() : IRequest<List<MessageResponse>>;
+public sealed record GetMessagesQuery(Guid ConversationId, int PageNumbers, int PageSize) : IRequest<List<MessageResponse>>;

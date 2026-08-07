@@ -10,14 +10,13 @@ public class MessageRepository(AppDBContext appDBContext) : BaseRepository<Messa
       public async Task<IEnumerable<Message>> GetMessagesByConversationIdAsync(Guid conversationId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
       {
             var result = await _dbContext.Messages
-                .Include(m => m.ConversationMessages)
-                .Where(m => m.ConversationMessages.Any(cm => cm.ConversationId == conversationId && cm.MessageId == m.Id)
-
-                         && m.DeleteDate == default)
-                  .OrderByDescending(m => m.SendDate)
-                  .Skip((pageNumber - 1) * pageSize)
-                  .Take(pageSize)
-                  .ToListAsync(cancellationToken);
+          .Include(m => m.ConversationMessages)
+          .Where(m => m.ConversationMessages.Any(cm => cm.ConversationId == conversationId && cm.MessageId == m.Id)
+                   && m.DeleteDate == default)
+            .OrderByDescending(m => m.SendDate)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
 
             return result;
       }

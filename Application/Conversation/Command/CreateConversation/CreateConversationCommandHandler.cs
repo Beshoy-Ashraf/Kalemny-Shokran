@@ -37,8 +37,6 @@ public class CreateConversationCommandHandler(IUnitOfWork unitOfWork, IChatNotif
 
 
 
-            var conversationMessage = new ConversationMessage(request.MessageId, conversation.Id);
-            conversation.ConversationMessages.Add(conversationMessage);
 
             await unitOfWork.ConversationRepository.AddAsync(conversation, cancellationToken);
             unitOfWork.Complete();

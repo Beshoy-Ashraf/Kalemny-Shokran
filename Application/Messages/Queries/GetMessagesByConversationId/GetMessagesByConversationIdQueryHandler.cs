@@ -8,19 +8,15 @@ public class GetMessagesByConversationIdQueryHandler(IUnitOfWork unitOfWork) : I
 {
       public async Task<List<MessageResponse>> Handle(GetMessagesByConversationIdQuery request, CancellationToken cancellationToken)
       {
-            var messages = await unitOfWork.MessageRepository.FindAllAsync(x => x.DeleteDate == null, (request.PageNumber - 1) * request.PageSize, request.PageSize, cancellationToken,
-                        ["UserMessageSees", "ConversationMessages"]);
+            var messages = await unitOfWork.MessageRepository.GetMessagesByConversationIdAsync(
+                    request.ConversationId,
+                    request.PageNumber,
+                    request.PageSize,
+                    cancellationToken);
 
-            var result = messages
-                .Where(x => x.ConversationMessages.Any(cm => cm.ConversationId == request.ConversationId))
-                .ToList();
-
-            var ListOfMessages = new List<MessageResponse>();
-            foreach (var message in result)
-            {
-                  ListOfMessages.Add(new MessageResponse(message));
-            }
-            unitOfWork.Complete();
-            return ListOfMessages;
+            return messages
+                  .OrderBy(m => m.SendDate)
+                  .Select(message => new MessageResponse(message, request.ConversationId))
+                  .ToList();
       }
 }

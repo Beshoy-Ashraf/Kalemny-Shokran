@@ -1,3 +1,4 @@
+using Application.Common.NotFoundException;
 using Application.Messages.Queries.Common;
 using Domain.Interfaces;
 using MediatR;
@@ -8,11 +9,12 @@ public class GetMessagesQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<G
 {
       public async Task<List<MessageResponse>> Handle(GetMessagesQuery request, CancellationToken cancellationToken)
       {
-            var messages = await unitOfWork.MessageRepository.FindAllAsync(x => x.DeleteDate == null, cancellationToken);
+            var messages = await unitOfWork.MessageRepository.GetMessagesByConversationIdAsync(request.ConversationId, request.PageNumbers, request.PageSize, cancellationToken)
+                ?? throw new NotFoundException(request.ConversationId, $"Conversation with id {request.ConversationId} not found.");
             var ListOfMessages = new List<MessageResponse>();
             foreach (var message in messages)
             {
-                  ListOfMessages.Add(new MessageResponse(message));
+                  ListOfMessages.Add(new MessageResponse(message, request.ConversationId));
             }
             unitOfWork.Complete();
             return ListOfMessages;
