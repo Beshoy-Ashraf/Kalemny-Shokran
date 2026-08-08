@@ -54,11 +54,11 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return CreatedAtAction(nameof(GetMessageById), new { id = resultId }, command);
       }
-      [HttpPut("{id:guid}")]
-      public async Task<IActionResult> UpdateMessage(Guid id, [FromBody] UpdateMessageCommand command, CancellationToken cancellationToken)
+      [HttpPut("conversation/{conversationId:guid}/{messageId:guid}")]
+      public async Task<IActionResult> UpdateMessage([FromRoute] Guid conversationId, [FromRoute] Guid messageId, [FromBody] UpdateMessageCommand command, CancellationToken cancellationToken)
       {
-            if (id != command.MessageId)
-                  return BadRequest("Id in URL does not match Id in the body.");
+            if (messageId != command.MessageId)
+                  return BadRequest("MessageId in URL does not match Id in the body.");
 
             await mediator.Send(command, cancellationToken);
 

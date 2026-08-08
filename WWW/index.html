@@ -728,9 +728,10 @@
 
                   // PUT /api/Message/{id} -> UpdateMessageCommand. UpdateMessageCommand.cs
                   // wasn't shared, so the body assumes { messageId, content } — matching
-                  // the controller's `if (id != command.MessageId)` check. Adjust if your
-                  // command has extra required fields.
-                  updateMessagePath: (messageId) => `/api/Message/${messageId}`,
+                  // PUT /api/Message/conversation/{conversationId}/{messageId} ->
+                  // UpdateMessageCommand. Confirmed shape needs conversationId + messageId
+                  // in the URL, and the body's MessageId must match the route's messageId.
+                  updateMessagePath: (conversationId, messageId) => `/api/Message/conversation/${conversationId}/${messageId}`,
 
                   // DELETE /api/Message/{id}
                   deleteMessagePath: (messageId) => `/api/Message/${messageId}`,
@@ -900,7 +901,41 @@
                         console.log('[MessageSeen]', messageId, userId);
                   });
 
-                  state.connection.on('ConversationCreated', async (conversationId) => {
+                  // Real-time edit — server broadcasts the updated MessageResponse to
+                  // everyone in the conversation group (including the editor themselves,
+                  // same as ReceiveMessage does for new sends).
+                  state.connection.on('ReceiveEditedMessage', (msg) => {
+                        const conversationId = msg.conversationId ?? msg.ConversationId;
+                        const messageId = msg.id ?? msg.Id;
+                        if (!conversationId || !messageId) return;
+
+                        const list = state.messagesByConversation.get(conversationId) ?? [];
+                        const existing = list.find(m => (m.id ?? m.Id) === messageId);
+                        if (existing) {
+                              existing.content = msg.content ?? msg.Content;
+                              existing.edited = true;
+                        }
+
+                        if (conversationId === state.activeConversationId) {
+                              const bubble = el.messages.querySelector(`[data-message-id="${messageId}"]`);
+                              if (bubble && existing) rerenderSingleMessage(bubble, conversationId, existing);
+                        }
+                  });
+
+                  state.connection.on('ConversationCreated', async (payload) => {
+                        // Defensive: accept either a bare Guid string (what the server was
+                        // sending before) or an object wrapping it (e.g. { conversationId }
+                        // or { id }) — normalizing here avoids "[object Object]" showing up
+                        // if the payload shape changes on the server.
+                        const conversationId = typeof payload === 'string'
+                              ? payload
+                              : (payload?.conversationId ?? payload?.ConversationId ?? payload?.id ?? payload?.Id ?? null);
+
+                        if (!conversationId) {
+                              addSystemLine(`ConversationCreated fired but no id could be parsed from the payload: ${JSON.stringify(payload)}`);
+                              return;
+                        }
+
                         // A conversation this user is part of was created elsewhere
                         // (e.g. via Swagger). Fetch its details and add it to the sidebar
                         // without requiring a page refresh.
@@ -1308,11 +1343,11 @@
                         if (!newContent) return;
 
                         try {
-                              // UpdateMessageCommand's exact shape is a guess — { messageId, content } —
-                              // matching the controller's `if (id != command.MessageId)` check.
-                              await authedFetch(CONFIG.updateMessagePath(messageId), {
+                              // Confirmed from UpdateMessageCommandHandler: it reads
+                              // request.ConversationId and request.MessageId, plus Content.
+                              await authedFetch(CONFIG.updateMessagePath(conversationId, messageId), {
                                     method: 'PUT',
-                                    body: JSON.stringify({ messageId, content: newContent }),
+                                    body: JSON.stringify({ conversationId, messageId, content: newContent }),
                               });
 
                               const list = state.messagesByConversation.get(conversationId) ?? [];
@@ -1322,6 +1357,10 @@
                                     msg.edited = true;
                                     rerenderSingleMessage(bubble, conversationId, msg);
                               }
+                              // No local system-line needed on success — the server also broadcasts
+                              // ReceiveEditedMessage back to this same conversation group, which
+                              // the handler below will apply again (harmlessly, since content
+                              // will already match).
                         } catch (err) {
                               addSystemLine(`Edit failed: ${err.message}. Check CONFIG.updateMessagePath and UpdateMessageCommand's field names.`);
                               cancel();

@@ -14,6 +14,12 @@ public class SignalRChatNotifier(IHubContext<ChatHub> hubContext) : IChatNotifie
             .Group(conversationId.ToString())
             .SendAsync("ReceiveMessage", message, cancellationToken);
       }
+      public async Task NotifyEditMessageAsync(Guid conversationId, object message, CancellationToken cancellationToken)
+      {
+            await hubContext.Clients
+            .Group(conversationId.ToString())
+            .SendAsync("ReceiveEditedMessage", message, cancellationToken);
+      }
       public async Task NotifyMessageSeenAsync(Guid conversationId, Guid messageId, Guid userId, CancellationToken cancellationToken)
       {
             await hubContext.Clients
