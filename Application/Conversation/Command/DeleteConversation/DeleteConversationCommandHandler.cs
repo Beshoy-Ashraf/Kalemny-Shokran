@@ -1,9 +1,10 @@
+using Application.Common.Interfaces;
 using Domain.Interfaces;
 using MediatR;
 
 namespace Application.Conversation.Command.DeleteConversation;
 
-public class DeleteConversationCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteConversationCommand, bool>
+public class DeleteConversationCommandHandler(IUnitOfWork unitOfWork, IChatNotifier chatNotifier) : IRequestHandler<DeleteConversationCommand, bool>
 {
       public async Task<bool> Handle(DeleteConversationCommand request, CancellationToken cancellationToken)
       {
@@ -11,9 +12,10 @@ public class DeleteConversationCommandHandler(IUnitOfWork unitOfWork) : IRequest
             conversation.DeletedDate = DateTime.UtcNow;
             await unitOfWork.ConversationRepository.UpdateAsync(conversation);
             unitOfWork.Complete();
-            var userIds = conversation.UserConversations.Select(uc => uc.UserId).ToList();
 
             var members = await unitOfWork.ConversationRepository.GetConversationMembersAsync(request.ConversationId, cancellationToken);
+            await chatNotifier.NotifyConversationDeletedAsync(members.Select(m => m.Id).ToList(), request.ConversationId, cancellationToken);
+
             return true;
       }
 }

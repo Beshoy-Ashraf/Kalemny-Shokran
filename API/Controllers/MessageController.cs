@@ -64,10 +64,10 @@ public class MessageController(IMediator mediator) : ControllerBase
 
             return NoContent();
       }
-      [HttpDelete("{id:guid}")]
-      public async Task<IActionResult> DeleteMessage(Guid id, CancellationToken cancellationToken)
+      [HttpDelete("conversation/{conversationId:guid}/{messageId:guid}")]
+      public async Task<IActionResult> DeleteMessage([FromRoute] Guid conversationId, [FromRoute] Guid messageId, CancellationToken cancellationToken)
       {
-            var command = new DeleteMessageCommand(id);
+            var command = new DeleteMessageCommand(conversationId, messageId);
             await mediator.Send(command, cancellationToken);
 
             return NoContent();

@@ -271,20 +271,23 @@
                   display: flex;
                   align-items: center;
                   gap: 10px;
-                  padding: 10px 10px;
-                  border-radius: 8px;
+                  padding: 8px 10px;
+                  border-radius: 10px;
                   cursor: pointer;
                   margin-bottom: 2px;
                   border: 1px solid transparent;
+                  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
             }
 
             .conversation-row:hover {
                   background: var(--surface-raised);
+                  transform: translateX(1px);
             }
 
             .conversation-row.active {
                   background: var(--surface-raised);
                   border-color: var(--accent-dim);
+                  box-shadow: 0 0 0 1px rgba(77, 232, 192, 0.08);
             }
 
             .conversation-dot {
@@ -318,6 +321,7 @@
                   border-radius: 10px;
                   min-width: 16px;
                   text-align: center;
+                  box-shadow: 0 0 8px rgba(255, 107, 74, 0.35);
             }
 
             .empty-hint {
@@ -335,11 +339,18 @@
             }
 
             .chat-header {
-                  padding: 14px 20px;
+                  padding: 12px 20px;
                   border-bottom: 1px solid var(--border);
                   display: flex;
                   justify-content: space-between;
                   align-items: center;
+                  background: linear-gradient(180deg, var(--surface) 0%, rgba(20, 23, 28, 0.6) 100%);
+            }
+
+            .chat-header-identity {
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
             }
 
             .chat-header h3 {
@@ -350,7 +361,7 @@
 
             .chat-header .sub {
                   font-family: var(--font-mono);
-                  font-size: 11px;
+                  font-size: 10.5px;
                   color: var(--text-faint);
             }
 
@@ -370,6 +381,30 @@
                   border: 1px solid var(--border);
                   font-size: 13.5px;
                   line-height: 1.45;
+                  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+                  animation: msg-in 0.15s ease-out;
+            }
+
+            @keyframes msg-in {
+                  from {
+                        opacity: 0;
+                        transform: translateY(4px);
+                  }
+
+                  to {
+                        opacity: 1;
+                        transform: translateY(0);
+                  }
+            }
+
+            .msg-row {
+                  display: flex;
+                  gap: 8px;
+                  align-items: flex-end;
+            }
+
+            .msg-row.mine-row {
+                  justify-content: flex-end;
             }
 
             .msg.mine {
@@ -490,7 +525,8 @@
             .modal-backdrop {
                   position: fixed;
                   inset: 0;
-                  background: rgba(0, 0, 0, 0.55);
+                  background: rgba(0, 0, 0, 0.6);
+                  backdrop-filter: blur(2px);
                   display: none;
                   align-items: center;
                   justify-content: center;
@@ -506,10 +542,24 @@
                   border: 1px solid var(--border);
                   border-radius: var(--radius);
                   padding: 20px;
-                  width: 380px;
+                  width: 400px;
                   display: flex;
                   flex-direction: column;
                   gap: 10px;
+                  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+                  animation: modal-in 0.15s ease-out;
+            }
+
+            @keyframes modal-in {
+                  from {
+                        opacity: 0;
+                        transform: scale(0.97) translateY(4px);
+                  }
+
+                  to {
+                        opacity: 1;
+                        transform: scale(1) translateY(0);
+                  }
             }
 
             .modal h3 {
@@ -549,11 +599,12 @@
             .user-picker-row {
                   display: flex;
                   align-items: center;
-                  gap: 8px;
+                  gap: 10px;
                   padding: 8px 10px;
                   cursor: pointer;
                   font-size: 13px;
                   border-bottom: 1px solid var(--border);
+                  transition: background 0.12s ease;
             }
 
             .user-picker-row:last-child {
@@ -573,10 +624,106 @@
                   font-family: var(--font-mono);
                   font-size: 10px;
                   color: var(--text-faint);
+                  margin-left: auto;
             }
 
             .user-picker-row.selected .uid {
                   color: #b9f3e4;
+            }
+
+            .user-picker-row .picker-name {
+                  flex: 1;
+            }
+
+            /* ---------- Avatars — deterministic gradient + initials fallback ---------- */
+            .avatar {
+                  border-radius: 50%;
+                  flex-shrink: 0;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-family: var(--font-mono);
+                  font-weight: 700;
+                  color: #fff;
+                  overflow: hidden;
+                  background-size: cover;
+                  background-position: center;
+                  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+            }
+
+            .avatar img {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: cover;
+                  display: block;
+            }
+
+            /* ---------- Checkbox indicator for group multi-select ---------- */
+            .picker-check {
+                  width: 16px;
+                  height: 16px;
+                  border-radius: 4px;
+                  border: 1.5px solid var(--text-faint);
+                  flex-shrink: 0;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 11px;
+                  transition: all 0.12s ease;
+            }
+
+            .user-picker-row.selected .picker-check {
+                  background: var(--accent);
+                  border-color: var(--accent);
+                  color: #04211B;
+            }
+
+            /* ---------- Conversation-type segmented toggle ---------- */
+            .type-toggle {
+                  display: flex;
+                  border: 1px solid var(--border);
+                  border-radius: 8px;
+                  overflow: hidden;
+                  margin-top: 2px;
+            }
+
+            .type-toggle label {
+                  flex: 1;
+                  text-align: center;
+                  padding: 8px 0;
+                  font-size: 12.5px;
+                  font-family: var(--font-body);
+                  color: var(--text-muted);
+                  cursor: pointer;
+                  text-transform: none;
+                  letter-spacing: normal;
+                  transition: background 0.15s ease, color 0.15s ease;
+            }
+
+            .type-toggle label:first-child {
+                  border-right: 1px solid var(--border);
+            }
+
+            .type-toggle input {
+                  display: none;
+            }
+
+            .type-toggle input:checked+label {
+                  background: var(--accent);
+                  color: #04211B;
+                  font-weight: 600;
+            }
+
+            .type-toggle-wrap {
+                  position: relative;
+            }
+
+            .group-only-row {
+                  display: none;
+            }
+
+            .group-only-row.visible {
+                  display: flex;
             }
 
             ::-webkit-scrollbar {
@@ -635,9 +782,12 @@
                   <!-- ============ CHAT PANE ============ -->
                   <div class="chat-pane">
                         <div class="chat-header">
-                              <div>
-                                    <h3 id="chatTitle">No conversation selected</h3>
-                                    <div id="chatSub" class="sub"></div>
+                              <div class="chat-header-identity">
+                                    <div id="chatAvatar"></div>
+                                    <div>
+                                          <h3 id="chatTitle">No conversation selected</h3>
+                                          <div id="chatSub" class="sub"></div>
+                                    </div>
                               </div>
                               <div style="display:flex; gap:8px; align-items:center;">
                                     <button id="catchUpBtn" style="display:none">Fetch missed
@@ -665,25 +815,38 @@
       <div class="modal-backdrop" id="modalBackdrop">
             <div class="modal">
                   <h3>Start a new conversation</h3>
+
+                  <div class="row type-toggle-wrap">
+                        <label>Conversation type</label>
+                        <div class="type-toggle">
+                              <input type="radio" name="convoType" id="convoTypeSingle" value="single" checked />
+                              <label for="convoTypeSingle">Single (1:1)</label>
+                              <input type="radio" name="convoType" id="convoTypeGroup" value="group" />
+                              <label for="convoTypeGroup">Group</label>
+                        </div>
+                  </div>
+
                   <div class="row">
-                        <label>Start a chat with</label>
+                        <label id="userPickerLabel">Start a chat with</label>
                         <input id="userSearchInput" type="text" placeholder="Search users…" />
                         <div id="userPickerList" class="user-picker-list">
                               <div class="empty-hint">Loading users…</div>
                         </div>
                   </div>
-                  <div class="row">
-                        <label>Title (optional, used for group chats)</label>
+
+                  <div class="row group-only-row" id="titleRow">
+                        <label>Group title (required)</label>
                         <input id="convoTitleInput" type="text" placeholder="Team chat" />
                   </div>
-                  <div class="row">
+                  <div class="row group-only-row" id="descriptionRow">
                         <label>Description (optional)</label>
                         <input id="convoDescriptionInput" type="text" placeholder="What's this conversation about?" />
                   </div>
-                  <div class="row">
-                        <label>Profile picture URL (optional)</label>
+                  <div class="row group-only-row" id="profilePictureRow">
+                        <label>Group picture URL (optional)</label>
                         <input id="convoProfilePictureInput" type="text" placeholder="https://…" />
                   </div>
+
                   <div class="modal-actions">
                         <button id="cancelModalBtn">Cancel</button>
                         <button id="createConvoBtn" class="primary" disabled>Create</button>
@@ -734,7 +897,7 @@
                   updateMessagePath: (conversationId, messageId) => `/api/Message/conversation/${conversationId}/${messageId}`,
 
                   // DELETE /api/Message/{id}
-                  deleteMessagePath: (messageId) => `/api/Message/${messageId}`,
+                  deleteMessagePath: (conversationId, messageId) => `/api/Message/conversation/${conversationId}/${messageId}`,
 
                   // DELETE /api/Conversation/{id}
                   deleteConversationPath: (conversationId) => `/api/Conversation/${conversationId}`,
@@ -765,12 +928,14 @@
                   token: null,
                   userId: null,
                   connection: null,
-                  conversations: new Map(),   // id -> { id, title, unreadCount, isGroup, resolvedTitle }
+                  conversations: new Map(),   // id -> { id, title, unreadCount, isGroup, avatarUrl }
                   activeConversationId: null,
                   messagesByConversation: new Map(), // id -> array of message dto
-                  userDisplayNames: new Map(),       // userId -> display name (cache, avoids refetching)
+                  userInfoCache: new Map(),          // userId -> { name, avatarUrl } (cache, avoids refetching)
                   allUsers: [],                      // populated when the "new conversation" modal opens
-                  selectedOtherUserId: null,         // currently picked user in that modal
+                  selectedOtherUserId: null,         // single-mode: the one picked user
+                  selectedGroupUserIds: new Set(),   // group-mode: multiple picked users
+                  convoType: 'single',               // 'single' | 'group'
             };
 
             /* ================================================================
@@ -791,16 +956,51 @@
                   sendBtn: document.getElementById('sendBtn'),
                   catchUpBtn: document.getElementById('catchUpBtn'),
                   deleteConvoBtn: document.getElementById('deleteConvoBtn'),
+                  chatAvatar: document.getElementById('chatAvatar'),
                   newConvoBtn: document.getElementById('newConvoBtn'),
                   modalBackdrop: document.getElementById('modalBackdrop'),
+                  convoTypeSingle: document.getElementById('convoTypeSingle'),
+                  convoTypeGroup: document.getElementById('convoTypeGroup'),
+                  userPickerLabel: document.getElementById('userPickerLabel'),
                   userSearchInput: document.getElementById('userSearchInput'),
                   userPickerList: document.getElementById('userPickerList'),
+                  titleRow: document.getElementById('titleRow'),
+                  descriptionRow: document.getElementById('descriptionRow'),
+                  profilePictureRow: document.getElementById('profilePictureRow'),
                   convoTitleInput: document.getElementById('convoTitleInput'),
                   convoDescriptionInput: document.getElementById('convoDescriptionInput'),
                   convoProfilePictureInput: document.getElementById('convoProfilePictureInput'),
                   cancelModalBtn: document.getElementById('cancelModalBtn'),
                   createConvoBtn: document.getElementById('createConvoBtn'),
             };
+
+            /* ================================================================
+               AVATAR HELPER — renders a real image if we have a URL, otherwise a
+               deterministic colored circle with initials so every person/group
+               still looks distinct without needing a real picture.
+               ================================================================ */
+            const AVATAR_COLORS = ['#4DE8C0', '#FF6B4A', '#6C8EFF', '#FFC24D', '#C77DFF', '#4DC3FF', '#FF7DB0'];
+
+            function colorForName(name) {
+                  const str = name || '?';
+                  let hash = 0;
+                  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+            }
+
+            function initialsFor(name) {
+                  if (!name) return '?';
+                  const parts = name.trim().split(/\s+/);
+                  return parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+
+            function avatarHtml(name, url, size = 36) {
+                  const style = `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.4)}px;`;
+                  if (url && url !== 'N/A' && url.trim() !== '') {
+                        return `<div class="avatar" style="${style}"><img src="${url}" alt="" onerror="this.parentElement.style.background='${colorForName(name)}';this.remove();this.parentElement.textContent='${initialsFor(name)}';" /></div>`;
+                  }
+                  return `<div class="avatar" style="${style}background:${colorForName(name)};">${initialsFor(name)}</div>`;
+            }
 
             /* ================================================================
                CONNECTION STATUS UI
@@ -922,6 +1122,50 @@
                         }
                   });
 
+                  // Real-time delete — server only sends the bare messageId (not
+                  // conversationId), scoped via the conversation's SignalR group, so we
+                  // search every cached conversation for it rather than assuming it's
+                  // the active one.
+                  state.connection.on('ReceiveDeletedMessage', (messageId) => {
+                        for (const [convId, list] of state.messagesByConversation.entries()) {
+                              const idx = list.findIndex(m => (m.id ?? m.Id) === messageId);
+                              if (idx === -1) continue;
+
+                              list.splice(idx, 1);
+
+                              if (convId === state.activeConversationId) {
+                                    const bubble = el.messages.querySelector(`[data-message-id="${messageId}"]`);
+                                    (bubble?.closest('.msg-row') ?? bubble)?.remove();
+                              }
+                              break;
+                        }
+                  });
+
+                  // Real-time conversation delete — pushed to each member's personal
+                  // group, same pattern as ConversationCreated.
+                  state.connection.on('ConversationDeleted', (payload) => {
+                        const conversationId = typeof payload === 'string'
+                              ? payload
+                              : (payload?.conversationId ?? payload?.ConversationId ?? payload?.id ?? payload?.Id ?? null);
+                        if (!conversationId) return;
+
+                        state.conversations.delete(conversationId);
+                        state.messagesByConversation.delete(conversationId);
+                        renderConversationList();
+
+                        if (conversationId === state.activeConversationId) {
+                              state.activeConversationId = null;
+                              el.chatTitle.textContent = 'No conversation selected';
+                              el.chatSub.textContent = '';
+                              el.chatAvatar.innerHTML = '';
+                              el.catchUpBtn.style.display = 'none';
+                              el.deleteConvoBtn.style.display = 'none';
+                              el.messageInput.disabled = true;
+                              el.sendBtn.disabled = true;
+                              el.messages.innerHTML = `<div class="center-placeholder">This conversation was deleted.</div>`;
+                        }
+                  });
+
                   state.connection.on('ConversationCreated', async (payload) => {
                         // Defensive: accept either a bare Guid string (what the server was
                         // sending before) or an object wrapping it (e.g. { conversationId }
@@ -1005,11 +1249,13 @@
                                     id,
                                     title: c.title ?? c.Title ?? c.name ?? c.Name ?? '(untitled)',
                                     isGroup,
+                                    avatarUrl: isGroup ? (c.profilePictureUrl ?? c.ProfilePictureUrl ?? null) : null,
                                     unreadCount: 0, // filled in below
                               });
                               // For 1:1 chats, the stored Title is unreliable (it's whatever the
                               // creator set, not "the other person" relative to whoever's viewing) —
-                              // resolve and overwrite it with the other participant's real name.
+                              // resolve and overwrite it (and the avatar) with the other participant's
+                              // real info.
                               if (!isGroup) resolveDirectConversationName(id);
                         }
                         renderConversationList();
@@ -1054,13 +1300,16 @@
 
                         if (!otherId) return;
 
-                        const name = await getUserDisplayName(otherId);
+                        const info = await getUserInfo(otherId);
                         const convo = state.conversations.get(conversationId);
-                        if (convo && name) {
-                              convo.title = name;
+                        if (convo && info) {
+                              convo.title = info.name;
+                              convo.avatarUrl = info.avatarUrl;
+                              convo.otherUserId = otherId;
                               renderConversationList();
                               if (conversationId === state.activeConversationId) {
-                                    el.chatTitle.textContent = name;
+                                    el.chatTitle.textContent = info.name;
+                                    el.chatAvatar.innerHTML = avatarHtml(info.name, info.avatarUrl, 34);
                               }
                         }
                   } catch {
@@ -1069,14 +1318,16 @@
                   }
             }
 
-            async function getUserDisplayName(userId) {
-                  if (state.userDisplayNames.has(userId)) return state.userDisplayNames.get(userId);
+            async function getUserInfo(userId) {
+                  if (state.userInfoCache.has(userId)) return state.userInfoCache.get(userId);
                   try {
                         const user = await authedFetch(CONFIG.userByIdPath(userId));
                         const name = user.displayName ?? user.DisplayName ?? user.username ?? user.Username
                               ?? user.email ?? user.Email ?? userId.slice(0, 8);
-                        state.userDisplayNames.set(userId, name);
-                        return name;
+                        const avatarUrl = user.profilePictureUrl ?? user.ProfilePictureUrl ?? null;
+                        const info = { name, avatarUrl };
+                        state.userInfoCache.set(userId, info);
+                        return info;
                   } catch {
                         return null;
                   }
@@ -1105,8 +1356,9 @@
                         const row = document.createElement('div');
                         row.className = 'conversation-row' + (convo.id === state.activeConversationId ? ' active' : '');
                         row.innerHTML = `
-      <span class="conversation-dot ${convo.unreadCount > 0 ? 'unread' : ''}"></span>
+      ${avatarHtml(convo.title, convo.avatarUrl, 34)}
       <span class="conversation-name">${escapeHtml(convo.title)}</span>
+      <span class="conversation-dot ${convo.unreadCount > 0 ? 'unread' : ''}"></span>
       ${convo.unreadCount > 0 ? `<span class="badge">${convo.unreadCount}</span>` : ''}
     `;
                         row.addEventListener('click', () => selectConversation(convo.id));
@@ -1121,6 +1373,7 @@
                   const convo = state.conversations.get(conversationId);
                   el.chatTitle.textContent = convo?.title ?? conversationId;
                   el.chatSub.textContent = conversationId;
+                  el.chatAvatar.innerHTML = avatarHtml(convo?.title, convo?.avatarUrl, 34);
                   el.catchUpBtn.style.display = 'inline-block';
                   el.deleteConvoBtn.style.display = 'inline-block';
                   el.messageInput.disabled = false;
@@ -1192,6 +1445,7 @@
                         renderConversationList();
                         el.chatTitle.textContent = 'No conversation selected';
                         el.chatSub.textContent = '';
+                        el.chatAvatar.innerHTML = '';
                         el.catchUpBtn.style.display = 'none';
                         el.deleteConvoBtn.style.display = 'none';
                         el.messageInput.disabled = true;
@@ -1270,36 +1524,50 @@
                         return;
                   }
 
-                  const list = state.messagesByConversation.get(conversationId) ?? [];
-                  list.push(msg);
-                  state.messagesByConversation.set(conversationId, list);
-
-                  if (el.messages.querySelector('.center-placeholder')) el.messages.innerHTML = '';
-
                   const senderId = msg.userSenderId ?? msg.UserSenderId ?? msg.senderId ?? msg.SenderId;
                   const isMine = senderId === state.userId;
                   const sentAt = msg.sendDate ?? msg.SendDate ?? msg.sentAt ?? msg.SentAt;
                   const messageId = msg.id ?? msg.Id;
 
-                  const bubble = document.createElement('div');
-                  bubble.className = 'msg' + (isMine ? ' mine' : '');
-                  bubble.dataset.messageId = messageId ?? '';
-                  bubble.innerHTML = `
-    ${isMine && messageId ? `
-      <div class="msg-actions">
-        <button class="edit-msg-btn" title="Edit">✎</button>
-        <button class="delete-msg-btn" title="Delete">🗑</button>
-      </div>` : ''}
-    <span class="msg-content">${escapeHtml(msg.content ?? msg.Content ?? '')}</span>
-    <span class="meta">${isMine ? 'you' : senderId?.slice(0, 8)} · ${new Date(sentAt).toLocaleTimeString()}</span>
+                  const row = document.createElement('div');
+                  row.className = 'msg-row' + (isMine ? ' mine-row' : '');
+
+                  const cachedSender = !isMine ? state.userInfoCache.get(senderId) : null;
+                  const senderLabel = isMine ? 'you' : (cachedSender?.name ?? senderId?.slice(0, 8));
+
+                  row.innerHTML = `
+    ${!isMine ? avatarHtml(cachedSender?.name ?? senderId, cachedSender?.avatarUrl, 26) : ''}
+    <div class="msg${isMine ? ' mine' : ''}" data-message-id="${messageId ?? ''}">
+      ${isMine && messageId ? `
+        <div class="msg-actions">
+          <button class="edit-msg-btn" title="Edit">✎</button>
+          <button class="delete-msg-btn" title="Delete">🗑</button>
+        </div>` : ''}
+      <span class="msg-content">${escapeHtml(msg.content ?? msg.Content ?? '')}</span>
+      <span class="meta">${senderLabel} · ${new Date(sentAt).toLocaleTimeString()}</span>
+    </div>
   `;
 
+                  const bubble = row.querySelector('.msg');
                   if (isMine && messageId) {
                         bubble.querySelector('.edit-msg-btn').addEventListener('click', () => enterEditMode(bubble, conversationId, messageId));
                         bubble.querySelector('.delete-msg-btn').addEventListener('click', () => deleteMessage(bubble, conversationId, messageId));
                   }
 
-                  el.messages.appendChild(bubble);
+                  el.messages.appendChild(row);
+
+                  // If we don't have this sender's real name/avatar cached yet, fetch it
+                  // in the background and patch the row in place once it resolves —
+                  // avoids blocking message rendering on a network round trip per message.
+                  if (!isMine && !cachedSender) {
+                        getUserInfo(senderId).then((info) => {
+                              if (!info) return;
+                              const avatarSlot = row.querySelector('.avatar');
+                              if (avatarSlot) avatarSlot.outerHTML = avatarHtml(info.name, info.avatarUrl, 26);
+                              const metaSlot = bubble.querySelector('.meta');
+                              if (metaSlot) metaSlot.innerHTML = `${info.name} · ${new Date(sentAt).toLocaleTimeString()}`;
+                        });
+                  }
 
                   if (!opts.skipScroll) scrollMessagesToBottom();
             }
@@ -1394,18 +1662,21 @@
             }
 
             /* ================================================================
-               DELETE MESSAGE — DELETE /api/Message/{id}
+               DELETE MESSAGE — DELETE /api/Message/conversation/{conversationId}/{messageId}
                ================================================================ */
             async function deleteMessage(bubble, conversationId, messageId) {
                   if (!confirm('Delete this message?')) return;
 
                   try {
-                        await authedFetch(CONFIG.deleteMessagePath(messageId), { method: 'DELETE' });
+                        await authedFetch(CONFIG.deleteMessagePath(conversationId, messageId), { method: 'DELETE' });
 
                         const list = state.messagesByConversation.get(conversationId) ?? [];
                         state.messagesByConversation.set(conversationId, list.filter(m => (m.id ?? m.Id) !== messageId));
 
-                        bubble.remove();
+                        (bubble.closest('.msg-row') ?? bubble).remove();
+                        // No need to broadcast locally — the server also pushes
+                        // ReceiveDeletedMessage to the whole conversation group, which the
+                        // handler below applies too (harmlessly, since it's already gone here).
                   } catch (err) {
                         addSystemLine(`Delete failed: ${err.message}. Check CONFIG.deleteMessagePath.`);
                   }
@@ -1430,13 +1701,12 @@
             }
 
             /* ================================================================
-               NEW CONVERSATION MODAL — pick a user from the real user list
-               instead of typing a raw Guid.
+               NEW CONVERSATION MODAL — pick user(s) from the real user list
+               instead of typing raw Guids, with a Single/Group type toggle.
                ================================================================ */
             el.newConvoBtn.addEventListener('click', async () => {
                   el.modalBackdrop.classList.add('open');
-                  state.selectedOtherUserId = null;
-                  el.createConvoBtn.disabled = true;
+                  resetModalState();
 
                   if (state.allUsers.length === 0) {
                         try {
@@ -1446,8 +1716,17 @@
                                     .map(u => ({
                                           id: u.id ?? u.Id,
                                           name: u.displayName ?? u.DisplayName ?? u.username ?? u.Username ?? u.email ?? u.Email ?? '(unnamed)',
+                                          avatarUrl: u.profilePictureUrl ?? u.ProfilePictureUrl ?? null,
                                     }))
                                     .filter(u => u.id && u.id !== state.userId); // don't let you start a chat with yourself
+
+                              // Warm the cache so avatars in the sidebar/messages don't need a
+                              // separate fetch later for users we already know about.
+                              for (const u of state.allUsers) {
+                                    if (!state.userInfoCache.has(u.id)) {
+                                          state.userInfoCache.set(u.id, { name: u.name, avatarUrl: u.avatarUrl });
+                                    }
+                              }
                         } catch (err) {
                               el.userPickerList.innerHTML = `<div class="empty-hint">Could not load users (${err.message}). Check CONFIG.usersListPath.</div>`;
                               return;
@@ -1455,6 +1734,49 @@
                   }
                   renderUserPicker(state.allUsers);
             });
+
+            function resetModalState() {
+                  state.selectedOtherUserId = null;
+                  state.selectedGroupUserIds = new Set();
+                  state.convoType = 'single';
+                  el.convoTypeSingle.checked = true;
+                  el.userSearchInput.value = '';
+                  el.convoTitleInput.value = '';
+                  el.convoDescriptionInput.value = '';
+                  el.convoProfilePictureInput.value = '';
+                  applyConvoTypeUI();
+            }
+
+            function applyConvoTypeUI() {
+                  const isGroup = state.convoType === 'group';
+                  el.userPickerLabel.textContent = isGroup ? 'Add members' : 'Start a chat with';
+                  el.titleRow.classList.toggle('visible', isGroup);
+                  el.descriptionRow.classList.toggle('visible', isGroup);
+                  el.profilePictureRow.classList.toggle('visible', isGroup);
+                  updateCreateButtonState();
+                  renderUserPicker(state.allUsers);
+            }
+
+            el.convoTypeSingle.addEventListener('change', () => {
+                  if (!el.convoTypeSingle.checked) return;
+                  state.convoType = 'single';
+                  state.selectedGroupUserIds = new Set();
+                  applyConvoTypeUI();
+            });
+            el.convoTypeGroup.addEventListener('change', () => {
+                  if (!el.convoTypeGroup.checked) return;
+                  state.convoType = 'group';
+                  state.selectedOtherUserId = null;
+                  applyConvoTypeUI();
+            });
+
+            function updateCreateButtonState() {
+                  const isGroup = state.convoType === 'group';
+                  el.createConvoBtn.disabled = isGroup
+                        ? (state.selectedGroupUserIds.size < 2 || !el.convoTitleInput.value.trim())
+                        : !state.selectedOtherUserId;
+            }
+            el.convoTitleInput.addEventListener('input', updateCreateButtonState);
 
             el.userSearchInput.addEventListener('input', () => {
                   const q = el.userSearchInput.value.trim().toLowerCase();
@@ -1469,14 +1791,26 @@
                         el.userPickerList.innerHTML = `<div class="empty-hint">No matching users.</div>`;
                         return;
                   }
+                  const isGroup = state.convoType === 'group';
                   el.userPickerList.innerHTML = '';
                   for (const u of users) {
+                        const isSelected = isGroup ? state.selectedGroupUserIds.has(u.id) : u.id === state.selectedOtherUserId;
                         const row = document.createElement('div');
-                        row.className = 'user-picker-row' + (u.id === state.selectedOtherUserId ? ' selected' : '');
-                        row.innerHTML = `<span>${escapeHtml(u.name)}</span><span class="uid">${u.id.slice(0, 8)}…</span>`;
+                        row.className = 'user-picker-row' + (isSelected ? ' selected' : '');
+                        row.innerHTML = `
+      ${isGroup ? `<span class="picker-check">${isSelected ? '✓' : ''}</span>` : ''}
+      ${avatarHtml(u.name, u.avatarUrl, 28)}
+      <span class="picker-name">${escapeHtml(u.name)}</span>
+      <span class="uid">${u.id.slice(0, 8)}…</span>
+    `;
                         row.addEventListener('click', () => {
-                              state.selectedOtherUserId = u.id;
-                              el.createConvoBtn.disabled = false;
+                              if (isGroup) {
+                                    if (state.selectedGroupUserIds.has(u.id)) state.selectedGroupUserIds.delete(u.id);
+                                    else state.selectedGroupUserIds.add(u.id);
+                              } else {
+                                    state.selectedOtherUserId = u.id;
+                              }
+                              updateCreateButtonState();
                               renderUserPicker(users); // re-render to move the 'selected' highlight
                         });
                         el.userPickerList.appendChild(row);
@@ -1486,8 +1820,35 @@
             el.cancelModalBtn.addEventListener('click', () => el.modalBackdrop.classList.remove('open'));
 
             el.createConvoBtn.addEventListener('click', async () => {
-                  const otherUserId = state.selectedOtherUserId;
-                  if (!otherUserId) return;
+                  const isGroup = state.convoType === 'group';
+                  const usersId = isGroup ? [...state.selectedGroupUserIds] : [state.selectedOtherUserId];
+                  if (!usersId[0] || (isGroup && usersId.length < 2)) return;
+
+                  // Per the API's non-nullable string fields: group chats send whatever
+                  // the user typed; single (1:1) chats send the literal "N/A" since
+                  // title/description/picture aren't meaningful there — the title gets
+                  // auto-derived server-side from the other participant's name instead
+                  // (see CreateConversationCommandHandler), and description/picture have
+                  // nothing to attach to for a plain direct message.
+                  const body = isGroup
+                        ? {
+                              creatorId: state.userId,
+                              title: el.convoTitleInput.value.trim(),
+                              description: el.convoDescriptionInput.value.trim() || 'N/A',
+                              isGroup: true,
+                              profilePictureUrl: el.convoProfilePictureInput.value.trim() || 'N/A',
+                              usersId,
+                              messageId: crypto.randomUUID(),
+                        }
+                        : {
+                              creatorId: state.userId,
+                              title: null,
+                              description: 'N/A',
+                              isGroup: false,
+                              profilePictureUrl: 'N/A',
+                              usersId,
+                              messageId: crypto.randomUUID(),
+                        };
 
                   try {
                         // Not using authedFetch here because the response body is just the
@@ -1500,15 +1861,7 @@
                                     'Authorization': `Bearer ${state.token}`,
                                     'Content-Type': 'application/json',
                               },
-                              body: JSON.stringify({
-                                    creatorId: state.userId,
-                                    title: el.convoTitleInput.value.trim() || null,
-                                    description: el.convoDescriptionInput.value.trim(),       // '' if left blank — command requires a non-null string
-                                    isGroup: false,
-                                    profilePictureUrl: el.convoProfilePictureInput.value.trim(), // same
-                                    usersId: [otherUserId],
-                                    messageId: crypto.randomUUID(),
-                              }),
+                              body: JSON.stringify(body),
                         });
 
                         if (!res.ok) {
@@ -1521,11 +1874,7 @@
                         const conversationId = match ? match[0] : null;
 
                         el.modalBackdrop.classList.remove('open');
-                        el.userSearchInput.value = '';
-                        el.convoTitleInput.value = '';
-                        el.convoDescriptionInput.value = '';
-                        el.convoProfilePictureInput.value = '';
-                        state.selectedOtherUserId = null;
+                        resetModalState();
 
                         if (conversationId) {
                               // Best-effort immediate placeholder, in case Location was readable.

@@ -9,5 +9,6 @@ public interface IChatNotifier
       Task NotifyConversationCreatedAsync(IEnumerable<Guid> memberUserIds, ConversationResponse conversationResponse, CancellationToken cancellationToken);
       Task NotifyUnreadCountChangedAsync(Guid userId, Guid conversationId, int unreadCount, CancellationToken cancellationToken);
       Task NotifyEditMessageAsync(Guid conversationId, object message, CancellationToken cancellationToken);
-
+      Task NotifyMessageDeletedAsync(Guid conversationId, Guid messageId, CancellationToken cancellationToken);
+      Task NotifyConversationDeletedAsync(IEnumerable<Guid> memberUserIds, Guid conversationId, CancellationToken cancellationToken);
 }
