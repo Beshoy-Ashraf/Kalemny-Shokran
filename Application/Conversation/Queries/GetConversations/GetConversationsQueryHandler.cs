@@ -19,15 +19,34 @@ public class GetConversationsQueryHandler(IUnitOfWork unitOfWork) : IRequestHand
                     );
 
             var ListOfConversations = new List<ConversationResponse>();
+            var users = await unitOfWork.UserRepository.GetAllAsync(x => x.DeleteDate == default, cancellationToken);
+
 
             foreach (var conversation in conversations)
             {
+                  var GroupTitle = conversation.Title;
+                  var GroupDescription = conversation.Description;
+                  var GroupImageUrl = conversation.ProfilePictureUrl;
+                  if (!conversation.IsGroup)
+                  {
+                        conversation.UserConversations.ForEach(x =>
+                        {
+                              if (x.UserId != request.SenderId)
+                              {
+                                    GroupTitle = users.FirstOrDefault(u => u.Id == x.UserId)?.Username;
+                                    GroupDescription = "";
+                                    GroupImageUrl = users.FirstOrDefault(u => u.Id == x.UserId)?.ProfilePictureUrl;
+                              }
+                        });
+                  }
+
                   var conversationResponse = new ConversationResponse()
                   {
                         Id = conversation.Id,
-                        Title = conversation.Title,
-                        Description = conversation.Description,
-                        ImageUrl = conversation.ProfilePictureUrl,
+                        Title = GroupTitle,
+                        Description = GroupDescription,
+                        IsGroup = conversation.IsGroup,
+                        ImageUrl = GroupImageUrl,
                         UsersId = [.. conversation.UserConversations.Select(x => x.UserId)],
                         MessagesId = [.. conversation.ConversationMessages
                               .Where(x => x.Message != null && x.Message.DeleteDate == null )

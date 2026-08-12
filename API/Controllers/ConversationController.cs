@@ -16,17 +16,16 @@ public class ConversationController(IMediator mediatR) : ControllerBase
 {
 
       [HttpGet]
-      public async Task<IActionResult> GetConversations()
+      public async Task<IActionResult> GetConversations([FromQuery] Guid senderId)
       {
-            var result = await mediatR.Send(new GetConversationsQuery());
+            var result = await mediatR.Send(new GetConversationsQuery(senderId));
             return Ok(result);
       }
       [HttpGet("{id:guid}")]
-      public async Task<IActionResult> GetConversation([FromRoute] Guid id)
+      public async Task<IActionResult> GetConversation([FromRoute] Guid id, [FromQuery] Guid senderId)
       {
-            var result = await mediatR.Send(new GetConversationByIdQuery(id));
+            var result = await mediatR.Send(new GetConversationByIdQuery(senderId, id));
             return Ok(result);
-
       }
       [HttpPost]
       public async Task<IActionResult> CreateConversation([FromBody] CreateConversationCommand command)

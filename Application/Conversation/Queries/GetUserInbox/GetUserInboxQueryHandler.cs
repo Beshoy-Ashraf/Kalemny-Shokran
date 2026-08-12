@@ -12,6 +12,7 @@ public class GetUserInboxQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<
             var userResponses = conversations.Select(c => new ConversationResponse()
             {
                   Id = c.Id,
+                  IsGroup = c.IsGroup,
                   Title = c.Title,
                   Description = c.Description,
                   ImageUrl = c.ProfilePictureUrl,

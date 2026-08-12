@@ -6,31 +6,39 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Signal•R — Chat Test Client</title>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+      <!-- Added Google Fonts for a polished UI -->
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+            rel="stylesheet">
       <style>
             /* ============================================================
-     DESIGN TOKENS
-     A dev/debug chat client, not a marketing page — the signature
-     idea is literal: connection state reads as a "signal strength"
-     indicator, since this is SignalR. Everything else stays quiet
-     and functional so the actual chat data is legible.
-     ============================================================ */
+               DESIGN TOKENS: Midnight Glass Theme
+               ============================================================ */
             :root {
-                  --bg: #0B0D10;
-                  --surface: #14171C;
-                  --surface-raised: #1B1F26;
-                  --border: #262B33;
-                  --text: #E7E9EC;
-                  --text-muted: #8A8F98;
-                  --text-faint: #565C66;
-                  --accent: #4DE8C0;
-                  /* live / connected signal color */
-                  --accent-dim: #2A6E5E;
-                  --warn: #FF6B4A;
-                  /* unread / alert coral */
-                  --danger: #FF4D6A;
-                  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+                  --bg: #fdf8f3;
+                  /* Warm cream */
+                  --surface: rgba(255, 255, 255, 0.9);
+                  /* Soft white */
+                  --surface-raised: #ffffff;
+                  --border: #f0e4d8;
+                  --text: #3a2e26;
+                  --text-muted: #8a7a6d;
+                  --text-faint: #c2b3a3;
+
+                  /* Accents: Warm coral */
+                  --accent: #fb7161;
+                  --accent-glow: rgba(251, 113, 97, 0.3);
+                  --accent-dim: rgba(251, 113, 97, 0.12);
+
+                  /* Status Colors */
+                  --warn: #f5a524;
+                  --warn-glow: rgba(245, 165, 36, 0.3);
+                  --danger: #f0553f;
+                  --live: #2bb673;
+                  --live-glow: rgba(43, 182, 115, 0.3);
+
+                  --font-mono: 'JetBrains Mono', Consolas, monospace;
                   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-                  --radius: 10px;
+                  --radius: 16px;
             }
 
             * {
@@ -39,7 +47,7 @@
 
             body {
                   margin: 0;
-                  background: var(--bg);
+                  background: radial-gradient(circle at top right, #fff3ea, var(--bg));
                   color: var(--text);
                   font-family: var(--font-body);
                   height: 100vh;
@@ -57,15 +65,19 @@
                   display: flex;
                   align-items: center;
                   justify-content: space-between;
-                  padding: 12px 20px;
+                  padding: 14px 24px;
                   background: var(--surface);
+                  backdrop-filter: blur(12px);
+                  -webkit-backdrop-filter: blur(12px);
                   border-bottom: 1px solid var(--border);
+                  box-shadow: 0 4px 20px rgba(180, 140, 100, 0.08);
+                  z-index: 10;
             }
 
             .brand {
                   display: flex;
                   align-items: center;
-                  gap: 10px;
+                  gap: 12px;
                   font-family: var(--font-mono);
                   font-size: 13px;
                   letter-spacing: 0.08em;
@@ -75,21 +87,22 @@
             .brand b {
                   color: var(--text);
                   font-weight: 700;
+                  letter-spacing: 0.1em;
             }
 
-            /* Signal-strength status indicator — the signature element */
+            /* ---------- Signal-strength status indicator ---------- */
             .signal {
                   display: flex;
                   align-items: flex-end;
-                  gap: 2px;
+                  gap: 3px;
                   height: 14px;
             }
 
             .signal i {
                   width: 3px;
-                  background: var(--text-faint);
-                  border-radius: 1px;
-                  transition: background 0.25s ease;
+                  background: var(--border);
+                  border-radius: 2px;
+                  transition: all 0.3s ease;
             }
 
             .signal i:nth-child(1) {
@@ -109,7 +122,8 @@
             }
 
             .signal.live i {
-                  background: var(--accent);
+                  background: var(--live);
+                  box-shadow: 0 0 8px var(--live-glow);
                   animation: pulse 1.8s ease-in-out infinite;
             }
 
@@ -127,6 +141,7 @@
 
             .signal.connecting i {
                   background: var(--warn);
+                  box-shadow: 0 0 8px var(--warn-glow);
                   animation: pulse 0.9s ease-in-out infinite;
             }
 
@@ -138,7 +153,7 @@
 
                   0%,
                   100% {
-                        opacity: 0.35;
+                        opacity: 0.4;
                   }
 
                   50% {
@@ -150,11 +165,12 @@
                   font-family: var(--font-mono);
                   font-size: 11px;
                   text-transform: uppercase;
-                  letter-spacing: 0.06em;
+                  letter-spacing: 0.08em;
+                  font-weight: 600;
             }
 
             .status-text.live {
-                  color: var(--accent);
+                  color: var(--live);
             }
 
             .status-text.connecting {
@@ -165,9 +181,10 @@
                   color: var(--danger);
             }
 
+            /* ---------- Forms & Inputs ---------- */
             .auth-row {
                   display: flex;
-                  gap: 8px;
+                  gap: 10px;
                   align-items: center;
             }
 
@@ -182,62 +199,75 @@
             input[type="email"],
             input[type="password"],
             input[type="datetime-local"] {
-                  background: var(--surface-raised);
+                  background: #fffaf5;
                   border: 1px solid var(--border);
                   color: var(--text);
-                  border-radius: 6px;
-                  padding: 7px 10px;
+                  border-radius: 10px;
+                  padding: 8px 12px;
                   outline: none;
+                  transition: all 0.2s ease;
             }
 
             input:focus {
-                  border-color: var(--accent-dim);
+                  border-color: var(--accent);
+                  box-shadow: 0 0 0 3px var(--accent-dim);
             }
 
             button {
                   background: var(--surface-raised);
                   border: 1px solid var(--border);
                   color: var(--text);
-                  border-radius: 6px;
-                  padding: 7px 12px;
+                  border-radius: 10px;
+                  padding: 8px 16px;
                   cursor: pointer;
-                  transition: border-color 0.15s ease, background 0.15s ease;
+                  font-weight: 500;
+                  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
-            button:hover {
-                  border-color: var(--accent-dim);
+            button:hover:not(:disabled) {
+                  border-color: var(--accent);
+                  background: #fff6f0;
+                  transform: translateY(-1px);
+            }
+
+            button:active:not(:disabled) {
+                  transform: translateY(0);
             }
 
             button:focus-visible {
-                  outline: 2px solid var(--accent);
-                  outline-offset: 1px;
+                  outline: none;
+                  box-shadow: 0 0 0 3px var(--accent-dim);
+                  border-color: var(--accent);
             }
 
             button.primary {
-                  background: var(--accent);
-                  color: #04211B;
-                  border-color: var(--accent);
+                  background: linear-gradient(135deg, var(--accent), #ff9472);
+                  color: #ffffff;
+                  border: none;
                   font-weight: 600;
+                  box-shadow: 0 4px 12px var(--accent-glow);
             }
 
-            button.primary:hover {
-                  background: #3fd6ae;
+            button.primary:hover:not(:disabled) {
+                  background: linear-gradient(135deg, #f0553f, var(--accent));
+                  box-shadow: 0 6px 16px var(--accent-glow);
             }
 
             button:disabled {
-                  opacity: 0.4;
+                  opacity: 0.5;
                   cursor: not-allowed;
+                  transform: none;
             }
 
             /* ---------- Main split ---------- */
             .main {
                   display: grid;
-                  grid-template-columns: 300px 1fr;
+                  grid-template-columns: 320px 1fr;
                   min-height: 0;
             }
 
             .sidebar {
-                  background: var(--surface);
+                  background: rgba(255, 255, 255, 0.5);
                   border-right: 1px solid var(--border);
                   display: flex;
                   flex-direction: column;
@@ -245,7 +275,7 @@
             }
 
             .sidebar-header {
-                  padding: 14px 16px 10px;
+                  padding: 20px;
                   display: flex;
                   justify-content: space-between;
                   align-items: center;
@@ -254,58 +284,65 @@
             .sidebar-header h2 {
                   font-size: 11px;
                   text-transform: uppercase;
-                  letter-spacing: 0.08em;
-                  color: var(--text-faint);
+                  letter-spacing: 0.1em;
+                  color: var(--text-muted);
                   font-family: var(--font-mono);
                   margin: 0;
-                  font-weight: 600;
+                  font-weight: 700;
             }
 
             .conversation-list {
                   flex: 1;
                   overflow-y: auto;
-                  padding: 0 8px;
+                  padding: 0 12px 12px;
             }
 
             .conversation-row {
                   display: flex;
                   align-items: center;
-                  gap: 10px;
-                  padding: 8px 10px;
-                  border-radius: 10px;
+                  gap: 12px;
+                  padding: 10px 12px;
+                  border-radius: var(--radius);
                   cursor: pointer;
-                  margin-bottom: 2px;
+                  margin-bottom: 4px;
                   border: 1px solid transparent;
-                  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+                  transition: all 0.2s ease;
             }
 
             .conversation-row:hover {
-                  background: var(--surface-raised);
-                  transform: translateX(1px);
+                  background: rgba(251, 113, 97, 0.06);
+                  transform: translateX(2px);
             }
 
             .conversation-row.active {
-                  background: var(--surface-raised);
-                  border-color: var(--accent-dim);
-                  box-shadow: 0 0 0 1px rgba(77, 232, 192, 0.08);
+                  background: var(--accent-dim);
+                  border-color: rgba(251, 113, 97, 0.35);
+                  box-shadow: 0 2px 10px rgba(251, 113, 97, 0.1);
+            }
+
+            .conversation-row.active .conversation-name {
+                  color: var(--accent);
             }
 
             .conversation-dot {
-                  width: 6px;
-                  height: 6px;
+                  width: 8px;
+                  height: 8px;
                   border-radius: 50%;
                   background: var(--text-faint);
                   flex-shrink: 0;
+                  transition: all 0.3s ease;
             }
 
             .conversation-dot.unread {
                   background: var(--warn);
+                  box-shadow: 0 0 8px var(--warn-glow);
                   animation: pulse 1.6s ease-in-out infinite;
             }
 
             .conversation-name {
                   flex: 1;
-                  font-size: 13px;
+                  font-size: 13.5px;
+                  font-weight: 500;
                   white-space: nowrap;
                   overflow: hidden;
                   text-overflow: ellipsis;
@@ -313,93 +350,161 @@
 
             .badge {
                   background: var(--warn);
-                  color: #2A0D06;
+                  color: #fff;
                   font-family: var(--font-mono);
                   font-size: 10px;
                   font-weight: 700;
-                  padding: 1px 6px;
-                  border-radius: 10px;
-                  min-width: 16px;
+                  padding: 2px 8px;
+                  border-radius: 12px;
+                  min-width: 20px;
                   text-align: center;
-                  box-shadow: 0 0 8px rgba(255, 107, 74, 0.35);
+                  box-shadow: 0 2px 8px var(--warn-glow);
             }
 
             .empty-hint {
-                  padding: 20px 16px;
-                  color: var(--text-faint);
-                  font-size: 12px;
+                  padding: 24px 20px;
+                  color: var(--text-muted);
+                  font-size: 13px;
                   line-height: 1.6;
+                  text-align: center;
             }
 
             /* ---------- Chat pane ---------- */
             .chat-pane {
                   display: grid;
-                  grid-template-rows: auto 1fr auto;
+                  grid-template-rows: auto auto 1fr auto;
                   min-height: 0;
+                  background: #fffdfb;
             }
 
             .chat-header {
-                  padding: 12px 20px;
+                  padding: 16px 24px;
                   border-bottom: 1px solid var(--border);
                   display: flex;
                   justify-content: space-between;
                   align-items: center;
-                  background: linear-gradient(180deg, var(--surface) 0%, rgba(20, 23, 28, 0.6) 100%);
+                  background: rgba(255, 255, 255, 0.75);
+                  backdrop-filter: blur(8px);
+                  -webkit-backdrop-filter: blur(8px);
             }
 
             .chat-header-identity {
                   display: flex;
                   align-items: center;
+                  gap: 14px;
+            }
+
+            /* ---------- Group members (collapsible) ---------- */
+            .members-toggle {
+                  border: none;
+                  background: none;
+                  color: var(--text-muted);
+                  padding: 4px 6px;
+                  cursor: pointer;
+                  font-size: 12px;
+                  line-height: 1;
+                  transition: transform 0.2s ease, color 0.2s ease;
+            }
+
+            .members-toggle:hover {
+                  color: var(--accent);
+                  background: none;
+                  transform: none;
+            }
+
+            .members-toggle.open {
+                  transform: rotate(180deg);
+                  color: var(--accent);
+            }
+
+            .group-members-panel {
+                  max-height: 0;
+                  overflow: hidden;
+                  background: #fff9f4;
+                  border-bottom: 1px solid transparent;
+                  transition: max-height 0.25s ease, border-color 0.25s ease;
+            }
+
+            .group-members-panel.open {
+                  max-height: 220px;
+                  overflow-y: auto;
+                  border-bottom: 1px solid var(--border);
+            }
+
+            .group-members-list {
+                  display: flex;
+                  flex-wrap: wrap;
                   gap: 10px;
+                  padding: 14px 24px;
+            }
+
+            .member-chip {
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  background: #ffffff;
+                  border: 1px solid var(--border);
+                  border-radius: 999px;
+                  padding: 4px 12px 4px 4px;
+                  font-size: 12.5px;
+                  font-weight: 500;
+                  color: var(--text);
             }
 
             .chat-header h3 {
-                  margin: 0;
-                  font-size: 14px;
+                  margin: 0 0 4px 0;
+                  font-size: 15px;
                   font-weight: 600;
+                  letter-spacing: -0.01em;
             }
 
             .chat-header .sub {
                   font-family: var(--font-mono);
-                  font-size: 10.5px;
+                  font-size: 11px;
                   color: var(--text-faint);
             }
 
             .messages {
                   overflow-y: auto;
-                  padding: 18px 20px;
+                  padding: 24px 32px;
                   display: flex;
                   flex-direction: column;
-                  gap: 10px;
+                  gap: 16px;
             }
 
             .msg {
-                  max-width: 60%;
-                  padding: 9px 12px;
-                  border-radius: 10px;
+                  max-width: 65%;
+                  padding: 12px 16px;
+                  border-radius: 14px;
+                  border-bottom-left-radius: 4px;
                   background: var(--surface-raised);
                   border: 1px solid var(--border);
-                  font-size: 13.5px;
-                  line-height: 1.45;
-                  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-                  animation: msg-in 0.15s ease-out;
+                  font-size: 14px;
+                  line-height: 1.5;
+                  box-shadow: 0 2px 8px rgba(180, 140, 100, 0.08);
+                  animation: msg-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+                  transition: box-shadow 0.2s ease, transform 0.2s ease;
+            }
+
+            .msg:hover {
+                  box-shadow: 0 4px 14px rgba(180, 140, 100, 0.14);
             }
 
             @keyframes msg-in {
                   from {
                         opacity: 0;
-                        transform: translateY(4px);
+                        transform: translateY(10px) scale(0.97);
                   }
 
                   to {
                         opacity: 1;
-                        transform: translateY(0);
+                        transform: translateY(0) scale(1);
                   }
             }
 
             .msg-row {
                   display: flex;
-                  gap: 8px;
+                  gap: 12px;
                   align-items: flex-end;
             }
 
@@ -407,23 +512,43 @@
                   justify-content: flex-end;
             }
 
+            /* Consecutive messages from the same sender sit closer together,
+               like a real chat thread instead of evenly-spaced cards. */
+            .msg-row+.msg-row.grouped {
+                  margin-top: -10px;
+            }
+
+            .msg-row.grouped .avatar {
+                  visibility: hidden;
+            }
+
             .msg.mine {
-                  align-self: flex-end;
-                  background: var(--accent-dim);
-                  border-color: var(--accent-dim);
+                  border-bottom-left-radius: 14px;
+                  border-bottom-right-radius: 4px;
+                  background: linear-gradient(145deg, var(--accent), #ff9472);
+                  border: 1px solid #f0553f;
+                  color: #fff;
                   position: relative;
+                  box-shadow: 0 4px 12px var(--accent-glow);
+            }
+
+            .msg.mine:hover {
+                  box-shadow: 0 6px 18px var(--accent-glow);
+                  transform: translateY(-1px);
             }
 
             .msg .meta {
                   display: block;
                   font-family: var(--font-mono);
                   font-size: 10px;
-                  color: var(--text-faint);
-                  margin-top: 4px;
+                  color: var(--text-muted);
+                  margin-top: 6px;
             }
 
+
+
             .msg.mine .meta {
-                  color: #9fe8d4;
+                  color: rgba(255, 255, 255, 0.85);
             }
 
             .msg.editing .meta {
@@ -431,106 +556,129 @@
             }
 
             .msg-actions {
-                  display: none;
-                  gap: 4px;
+                  display: flex;
+                  gap: 6px;
                   position: absolute;
-                  top: -12px;
-                  right: 6px;
+                  top: -16px;
+                  right: 8px;
+                  opacity: 0;
+                  pointer-events: none;
+                  transform: translateY(4px);
+                  transition: opacity 0.15s ease, transform 0.15s ease;
             }
 
             .msg.mine:hover .msg-actions {
-                  display: flex;
+                  opacity: 1;
+                  pointer-events: auto;
+                  transform: translateY(0);
             }
 
             .msg-actions button {
-                  padding: 2px 6px;
-                  font-size: 10px;
-                  line-height: 1.4;
-                  border-radius: 4px;
-                  background: var(--surface);
+                  padding: 4px 8px;
+                  font-size: 11px;
+                  border-radius: 6px;
+                  background: #ffffff;
+                  border: 1px solid var(--border);
+                  box-shadow: 0 2px 6px rgba(180, 140, 100, 0.15);
             }
 
             .msg-actions button:hover {
-                  border-color: var(--warn);
+                  border-color: var(--accent);
+                  color: var(--accent);
             }
 
             .msg-edit-row {
                   display: flex;
-                  gap: 6px;
-                  margin-top: 2px;
+                  gap: 8px;
+                  margin-top: 4px;
             }
 
             .msg-edit-row input {
                   flex: 1;
-                  padding: 5px 8px;
-                  font-size: 13px;
-            }
-
-            .msg-edit-row button {
-                  padding: 5px 8px;
-                  font-size: 11px;
             }
 
             .msg .edited-tag {
-                  opacity: 0.6;
+                  opacity: 0.7;
                   font-style: italic;
             }
 
             .msg.deleted {
-                  opacity: 0.5;
+                  opacity: 0.4;
                   font-style: italic;
             }
 
             button.danger-btn {
                   border-color: var(--danger);
                   color: var(--danger);
+                  background: transparent;
             }
 
             button.danger-btn:hover {
                   background: var(--danger);
                   color: #fff;
+                  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
             }
 
             .system-line {
                   align-self: center;
                   font-family: var(--font-mono);
                   font-size: 11px;
-                  color: var(--text-faint);
-                  padding: 4px 10px;
+                  color: var(--text-muted);
+                  padding: 6px 14px;
+                  background: #f6ece2;
+                  border-radius: 20px;
+                  border: 1px solid var(--border);
             }
 
             .composer {
                   display: flex;
-                  gap: 8px;
-                  padding: 14px 20px;
+                  gap: 12px;
+                  padding: 20px 32px;
                   border-top: 1px solid var(--border);
+                  background: rgba(255, 255, 255, 0.6);
             }
 
             .composer input {
                   flex: 1;
+                  padding: 12px 16px;
+                  font-size: 14.5px;
+                  border-radius: 999px;
+            }
+
+            .composer #sendBtn {
+                  border-radius: 999px;
+                  padding: 8px 22px;
             }
 
             .center-placeholder {
                   display: flex;
+                  flex-direction: column;
                   align-items: center;
                   justify-content: center;
+                  gap: 10px;
                   height: 100%;
-                  color: var(--text-faint);
-                  font-size: 13px;
+                  color: var(--text-muted);
+                  font-size: 14px;
                   text-align: center;
-                  padding: 20px;
+                  padding: 32px;
+            }
+
+            .center-placeholder::before {
+                  content: '💬';
+                  font-size: 34px;
+                  opacity: 0.6;
             }
 
             /* ---------- Modal ---------- */
             .modal-backdrop {
                   position: fixed;
                   inset: 0;
-                  background: rgba(0, 0, 0, 0.6);
-                  backdrop-filter: blur(2px);
+                  background: rgba(58, 46, 38, 0.35);
+                  backdrop-filter: blur(6px);
                   display: none;
                   align-items: center;
                   justify-content: center;
-                  z-index: 10;
+                  z-index: 100;
             }
 
             .modal-backdrop.open {
@@ -538,22 +686,22 @@
             }
 
             .modal {
-                  background: var(--surface);
+                  background: #fffefc;
                   border: 1px solid var(--border);
-                  border-radius: var(--radius);
-                  padding: 20px;
-                  width: 400px;
+                  border-radius: 20px;
+                  padding: 28px;
+                  width: 440px;
                   display: flex;
                   flex-direction: column;
-                  gap: 10px;
-                  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-                  animation: modal-in 0.15s ease-out;
+                  gap: 16px;
+                  box-shadow: 0 24px 60px rgba(180, 140, 100, 0.25);
+                  animation: modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             }
 
             @keyframes modal-in {
                   from {
                         opacity: 0;
-                        transform: scale(0.97) translateY(4px);
+                        transform: scale(0.95) translateY(10px);
                   }
 
                   to {
@@ -563,48 +711,53 @@
             }
 
             .modal h3 {
-                  margin: 0 0 4px;
-                  font-size: 14px;
+                  margin: 0 0 8px;
+                  font-size: 18px;
+                  font-weight: 600;
             }
 
             .modal label {
                   font-size: 11px;
-                  color: var(--text-faint);
+                  color: var(--text-muted);
                   font-family: var(--font-mono);
                   text-transform: uppercase;
-                  letter-spacing: 0.05em;
+                  letter-spacing: 0.08em;
+                  font-weight: 700;
             }
 
             .modal .row {
                   display: flex;
                   flex-direction: column;
-                  gap: 4px;
+                  gap: 8px;
             }
 
             .modal-actions {
                   display: flex;
                   justify-content: flex-end;
-                  gap: 8px;
-                  margin-top: 6px;
+                  gap: 12px;
+                  margin-top: 12px;
+                  padding-top: 16px;
+                  border-top: 1px solid var(--border);
             }
 
             .user-picker-list {
-                  max-height: 220px;
+                  max-height: 240px;
                   overflow-y: auto;
                   border: 1px solid var(--border);
-                  border-radius: 8px;
-                  margin-top: 2px;
+                  border-radius: 10px;
+                  margin-top: 4px;
+                  background: #fffaf5;
             }
 
             .user-picker-row {
                   display: flex;
                   align-items: center;
-                  gap: 10px;
-                  padding: 8px 10px;
+                  gap: 12px;
+                  padding: 10px 14px;
                   cursor: pointer;
-                  font-size: 13px;
+                  font-size: 13.5px;
                   border-bottom: 1px solid var(--border);
-                  transition: background 0.12s ease;
+                  transition: background 0.2s ease;
             }
 
             .user-picker-row:last-child {
@@ -612,30 +765,31 @@
             }
 
             .user-picker-row:hover {
-                  background: var(--surface-raised);
+                  background: rgba(251, 113, 97, 0.06);
             }
 
             .user-picker-row.selected {
                   background: var(--accent-dim);
-                  color: #eafff9;
+                  color: var(--text);
             }
 
             .user-picker-row .uid {
                   font-family: var(--font-mono);
-                  font-size: 10px;
+                  font-size: 11px;
                   color: var(--text-faint);
                   margin-left: auto;
             }
 
             .user-picker-row.selected .uid {
-                  color: #b9f3e4;
+                  color: var(--accent);
             }
 
             .user-picker-row .picker-name {
                   flex: 1;
+                  font-weight: 500;
             }
 
-            /* ---------- Avatars — deterministic gradient + initials fallback ---------- */
+            /* ---------- Avatars ---------- */
             .avatar {
                   border-radius: 50%;
                   flex-shrink: 0;
@@ -648,7 +802,16 @@
                   overflow: hidden;
                   background-size: cover;
                   background-position: center;
-                  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+                  box-shadow: 0 2px 8px rgba(180, 140, 100, 0.2);
+                  border: 2px solid #fffefc;
+                  outline: 1px solid var(--border);
+                  transition: transform 0.2s ease, outline-color 0.2s ease;
+            }
+
+            .conversation-row:hover .avatar,
+            .msg-row:hover .avatar {
+                  transform: scale(1.06);
+                  outline-color: var(--accent);
             }
 
             .avatar img {
@@ -656,48 +819,60 @@
                   height: 100%;
                   object-fit: cover;
                   display: block;
+                  animation: avatar-in 0.25s ease;
             }
 
-            /* ---------- Checkbox indicator for group multi-select ---------- */
+            @keyframes avatar-in {
+                  from {
+                        opacity: 0;
+                  }
+
+                  to {
+                        opacity: 1;
+                  }
+            }
+
+            /* ---------- Checkbox indicator ---------- */
             .picker-check {
-                  width: 16px;
-                  height: 16px;
-                  border-radius: 4px;
-                  border: 1.5px solid var(--text-faint);
+                  width: 18px;
+                  height: 18px;
+                  border-radius: 6px;
+                  border: 1.5px solid var(--border);
                   flex-shrink: 0;
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  font-size: 11px;
-                  transition: all 0.12s ease;
+                  font-size: 12px;
+                  transition: all 0.2s ease;
             }
 
             .user-picker-row.selected .picker-check {
                   background: var(--accent);
                   border-color: var(--accent);
-                  color: #04211B;
+                  color: #fff;
             }
 
             /* ---------- Conversation-type segmented toggle ---------- */
             .type-toggle {
                   display: flex;
                   border: 1px solid var(--border);
-                  border-radius: 8px;
+                  border-radius: 10px;
                   overflow: hidden;
-                  margin-top: 2px;
+                  margin-top: 4px;
             }
 
             .type-toggle label {
                   flex: 1;
                   text-align: center;
-                  padding: 8px 0;
-                  font-size: 12.5px;
+                  padding: 10px 0;
+                  font-size: 13px;
                   font-family: var(--font-body);
                   color: var(--text-muted);
                   cursor: pointer;
                   text-transform: none;
                   letter-spacing: normal;
-                  transition: background 0.15s ease, color 0.15s ease;
+                  transition: all 0.2s ease;
+                  font-weight: 500;
             }
 
             .type-toggle label:first-child {
@@ -709,9 +884,10 @@
             }
 
             .type-toggle input:checked+label {
-                  background: var(--accent);
-                  color: #04211B;
+                  background: #fff6f0;
+                  color: var(--accent);
                   font-weight: 600;
+                  box-shadow: inset 0 -2px 0 var(--accent);
             }
 
             .type-toggle-wrap {
@@ -726,13 +902,122 @@
                   display: flex;
             }
 
+            /* ---------- Group info / management modal ---------- */
+            .chat-avatar-clickable {
+                  cursor: pointer;
+                  transition: transform 0.15s ease;
+            }
+
+            .chat-avatar-clickable:hover {
+                  transform: scale(1.06);
+            }
+
+            .group-info-modal {
+                  width: 420px;
+            }
+
+            .group-info-top {
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  gap: 8px;
+                  padding-bottom: 4px;
+            }
+
+            .group-info-avatar-wrap {
+                  position: relative;
+                  width: 96px;
+                  height: 96px;
+            }
+
+            .group-info-avatar-wrap .avatar {
+                  width: 96px;
+                  height: 96px;
+                  font-size: 34px;
+            }
+
+            .group-info-avatar-edit {
+                  position: absolute;
+                  inset: 0;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: rgba(58, 46, 38, 0.55);
+                  color: #fff;
+                  font-size: 10.5px;
+                  font-weight: 600;
+                  text-align: center;
+                  line-height: 1.3;
+                  padding: 8px;
+                  cursor: pointer;
+                  opacity: 0;
+                  transition: opacity 0.2s ease;
+            }
+
+            .group-info-avatar-wrap:hover .group-info-avatar-edit {
+                  opacity: 1;
+            }
+
+            .group-info-members-head {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+            }
+
+            .member-manage-row {
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  padding: 10px 14px;
+                  font-size: 13.5px;
+                  border-bottom: 1px solid var(--border);
+            }
+
+            .member-manage-row:last-child {
+                  border-bottom: none;
+            }
+
+            .member-manage-row .picker-name {
+                  flex: 1;
+                  font-weight: 500;
+            }
+
+            .admin-badge {
+                  font-family: var(--font-mono);
+                  font-size: 9.5px;
+                  font-weight: 700;
+                  letter-spacing: 0.05em;
+                  text-transform: uppercase;
+                  color: var(--accent);
+                  background: var(--accent-dim);
+                  padding: 2px 8px;
+                  border-radius: 999px;
+            }
+
+            .remove-member-btn {
+                  padding: 4px 8px;
+                  font-size: 11px;
+                  border-radius: 6px;
+            }
+
+            .group-info-actions {
+                  justify-content: space-between;
+            }
+
+            /* Custom Scrollbar */
             ::-webkit-scrollbar {
                   width: 8px;
+                  height: 8px;
             }
 
             ::-webkit-scrollbar-thumb {
-                  background: var(--border);
-                  border-radius: 4px;
+                  background: #e8d6c3;
+                  border-radius: 8px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                  background: #dcc2a8;
             }
 
             ::-webkit-scrollbar-track {
@@ -742,7 +1027,7 @@
 </head>
 
 <body>
-
+      <!-- Same markup & JS logic exactly as provided in the original file -->
       <div class="app">
 
             <!-- ============ TOP BAR: brand + connection signal + auth ============ -->
@@ -788,6 +1073,8 @@
                                           <h3 id="chatTitle">No conversation selected</h3>
                                           <div id="chatSub" class="sub"></div>
                                     </div>
+                                    <button id="groupMembersToggle" class="members-toggle" style="display:none"
+                                          title="Show group members">▾</button>
                               </div>
                               <div style="display:flex; gap:8px; align-items:center;">
                                     <button id="catchUpBtn" style="display:none">Fetch missed
@@ -795,6 +1082,10 @@
                                     <button id="deleteConvoBtn" class="danger-btn" style="display:none"
                                           title="Delete this conversation">Delete conversation</button>
                               </div>
+                        </div>
+
+                        <div id="groupMembersPanel" class="group-members-panel">
+                              <div id="groupMembersList" class="group-members-list"></div>
                         </div>
 
                         <div id="messages" class="messages">
@@ -854,6 +1145,53 @@
             </div>
       </div>
 
+      <!-- ============ GROUP INFO / MANAGEMENT MODAL (WhatsApp-style) ============ -->
+      <div class="modal-backdrop" id="groupInfoBackdrop">
+            <div class="modal group-info-modal">
+                  <div class="group-info-top">
+                        <div id="groupInfoAvatarWrap" class="group-info-avatar-wrap">
+                              <div id="groupInfoAvatar"></div>
+                              <div class="group-info-avatar-edit" id="groupInfoAvatarEdit" style="display:none">Change
+                                    photo</div>
+                        </div>
+                        <input id="groupInfoImageInput" type="text" placeholder="Image URL…" style="display:none" />
+                  </div>
+
+                  <div class="row">
+                        <label>Group name</label>
+                        <input id="groupInfoTitleInput" type="text" disabled />
+                  </div>
+                  <div class="row">
+                        <label>Description</label>
+                        <input id="groupInfoDescInput" type="text" disabled placeholder="No description" />
+                  </div>
+                  <button id="groupInfoSaveBtn" class="primary" style="display:none">Save changes</button>
+                  <div id="groupInfoSaveHint" class="empty-hint" style="display:none;padding:0;text-align:left;"></div>
+
+                  <div class="row">
+                        <div class="group-info-members-head">
+                              <label style="margin:0">Members</label>
+                              <button id="groupInfoAddMemberBtn" style="display:none">+ Add</button>
+                        </div>
+                        <div id="groupInfoAddPicker" class="user-picker-list" style="display:none"></div>
+                        <button id="groupInfoAddConfirmBtn" class="primary" style="display:none">Add selected</button>
+                        <div id="groupInfoMembersList" class="user-picker-list">
+                              <div class="empty-hint">Loading members…</div>
+                        </div>
+                  </div>
+
+                  <div class="modal-actions group-info-actions">
+                        <button id="groupInfoLeaveBtn" class="danger-btn">Leave group</button>
+                        <div style="display:flex; gap:12px;">
+                              <button id="groupInfoDeleteBtn" class="danger-btn" style="display:none">Delete
+                                    group</button>
+                              <button id="closeGroupInfoBtn">Close</button>
+                        </div>
+                  </div>
+            </div>
+      </div>
+
+      <!-- The Javascript config remains 100% untouched to ensure no backend mapping breakages -->
       <script>
             /* ================================================================
                CONFIG — matched against your real ConversationController,
@@ -865,10 +1203,16 @@
 
                   loginPath: "/api/Account/login",
 
-                  // GET /api/User/GetUserConversations/{userId} -> GetUserInboxQuery result.
-                  // This is the user-scoped list (vs GET /api/Conversation, which has no
-                  // filter params and looked like it returns everything).
-                  myConversationsPath: (userId) => `/api/User/GetUserConversations/${userId}`,
+                  // GET /api/Conversation?senderId={userId} -> GetConversationsQuery result.
+                  // (ConversationController.GetConversations — senderId is a filter, sent as
+                  // a query param, not nested in the path.)
+                  myConversationsPath: (userId) => `/api/Conversation?senderId=${userId}`,
+
+                  // GET /api/Conversation/{id}?senderId={userId} -> GetConversationByIdQuery result.
+                  conversationByIdPath: (conversationId, userId) => `/api/Conversation/${conversationId}?senderId=${userId}`,
+
+                  // GET /api/Conversation/direct?user1Id=&user2Id= -> GetDirectConversationQuery result.
+                  directConversationPath: (user1Id, user2Id) => `/api/Conversation/direct?user1Id=${user1Id}&user2Id=${user2Id}`,
 
                   // GET /api/Message/conversation/{conversationId}?pageNumber=&pageSize=
                   // Paginated — response may be a bare array or a { items: [...] } wrapper
@@ -912,6 +1256,27 @@
                   // Used to resolve the "other person's name" for non-group chats.
                   conversationMembersPath: (conversationId) => `/api/Conversation/${conversationId}/members`,
 
+                  // -------- Group management --------
+                  //
+                  // CONFIRMED from the server's own validation response (400):
+                  // PUT /api/Conversation/{id} requires UserId (the acting user, not
+                  // "conversationId"/"creatorId") and ProfilePictureUrl (non-empty —
+                  // "N/A" is used elsewhere in this file for "no value", follow that
+                  // convention rather than sending ""). Title/Description passed
+                  // validation with plain strings.
+                  //
+                  // Also CONFIRMED there is no separate members sub-resource for writes:
+                  // POST /api/Conversation/{id}/members -> 405 (route exists, only GET
+                  // is mapped). DELETE /api/Conversation/{id}/members/{userId} -> 404
+                  // (route doesn't exist at all). So adding/removing a member is done by
+                  // PUT-ing this same endpoint with a full replacement UsersId array —
+                  // there's no incremental add/remove call.
+                  updateConversationPath: (conversationId) => `/api/Conversation/${conversationId}`,
+                  // POST /api/Conversation/{id}/leave?userId= — still unconfirmed (no
+                  // controller action was shared for this one). Verify against your
+                  // backend before relying on it.
+                  leaveConversationPath: (conversationId, userId) => `/api/Conversation/${conversationId}/leave?userId=${userId}`,
+
                   // GET /api/User -> GetUsersQuery result (requires [Authorize], which we
                   // already send a Bearer token for). Used to populate the "new conversation"
                   // user picker.
@@ -936,6 +1301,15 @@
                   selectedOtherUserId: null,         // single-mode: the one picked user
                   selectedGroupUserIds: new Set(),   // group-mode: multiple picked users
                   convoType: 'single',               // 'single' | 'group'
+
+                  // Group info modal
+                  groupInfo: {
+                        conversationId: null,
+                        memberIds: [],          // current group member ids, as loaded
+                        isAdmin: false,
+                        addModeOn: false,
+                        selectedToAddIds: new Set(),
+                  },
             };
 
             /* ================================================================
@@ -957,6 +1331,9 @@
                   catchUpBtn: document.getElementById('catchUpBtn'),
                   deleteConvoBtn: document.getElementById('deleteConvoBtn'),
                   chatAvatar: document.getElementById('chatAvatar'),
+                  groupMembersToggle: document.getElementById('groupMembersToggle'),
+                  groupMembersPanel: document.getElementById('groupMembersPanel'),
+                  groupMembersList: document.getElementById('groupMembersList'),
                   newConvoBtn: document.getElementById('newConvoBtn'),
                   modalBackdrop: document.getElementById('modalBackdrop'),
                   convoTypeSingle: document.getElementById('convoTypeSingle'),
@@ -972,6 +1349,24 @@
                   convoProfilePictureInput: document.getElementById('convoProfilePictureInput'),
                   cancelModalBtn: document.getElementById('cancelModalBtn'),
                   createConvoBtn: document.getElementById('createConvoBtn'),
+
+                  // Group info / management modal
+                  groupInfoBackdrop: document.getElementById('groupInfoBackdrop'),
+                  groupInfoAvatarWrap: document.getElementById('groupInfoAvatarWrap'),
+                  groupInfoAvatar: document.getElementById('groupInfoAvatar'),
+                  groupInfoAvatarEdit: document.getElementById('groupInfoAvatarEdit'),
+                  groupInfoImageInput: document.getElementById('groupInfoImageInput'),
+                  groupInfoTitleInput: document.getElementById('groupInfoTitleInput'),
+                  groupInfoDescInput: document.getElementById('groupInfoDescInput'),
+                  groupInfoSaveBtn: document.getElementById('groupInfoSaveBtn'),
+                  groupInfoSaveHint: document.getElementById('groupInfoSaveHint'),
+                  groupInfoAddMemberBtn: document.getElementById('groupInfoAddMemberBtn'),
+                  groupInfoAddPicker: document.getElementById('groupInfoAddPicker'),
+                  groupInfoAddConfirmBtn: document.getElementById('groupInfoAddConfirmBtn'),
+                  groupInfoMembersList: document.getElementById('groupInfoMembersList'),
+                  groupInfoLeaveBtn: document.getElementById('groupInfoLeaveBtn'),
+                  groupInfoDeleteBtn: document.getElementById('groupInfoDeleteBtn'),
+                  closeGroupInfoBtn: document.getElementById('closeGroupInfoBtn'),
             };
 
             /* ================================================================
@@ -979,7 +1374,7 @@
                deterministic colored circle with initials so every person/group
                still looks distinct without needing a real picture.
                ================================================================ */
-            const AVATAR_COLORS = ['#4DE8C0', '#FF6B4A', '#6C8EFF', '#FFC24D', '#C77DFF', '#4DC3FF', '#FF7DB0'];
+            const AVATAR_COLORS = ['#6366f1', '#f59e0b', '#3b82f6', '#ef4444', '#a855f7', '#10b981', '#ec4899'];
 
             function colorForName(name) {
                   const str = name || '?';
@@ -1248,8 +1643,16 @@
                               state.conversations.set(id, {
                                     id,
                                     title: c.title ?? c.Title ?? c.name ?? c.Name ?? '(untitled)',
+                                    description: c.description ?? c.Description ?? '',
                                     isGroup,
-                                    avatarUrl: isGroup ? (c.profilePictureUrl ?? c.ProfilePictureUrl ?? null) : null,
+                                    // Your ConversationResponse uses "imageUrl" (confirmed from
+                                    // GetConversation's sample response) — profilePictureUrl is
+                                    // kept as a fallback in case an older endpoint still uses it.
+                                    avatarUrl: isGroup
+                                          ? (c.imageUrl ?? c.ImageUrl ?? c.profilePictureUrl ?? c.ProfilePictureUrl ?? null)
+                                          : null,
+                                    adminId: isGroup ? (c.adminId ?? c.AdminId ?? null) : null,
+                                    usersId: c.usersId ?? c.UsersId ?? null,
                                     unreadCount: 0, // filled in below
                               });
                               // For 1:1 chats, the stored Title is unreliable (it's whatever the
@@ -1309,7 +1712,7 @@
                               renderConversationList();
                               if (conversationId === state.activeConversationId) {
                                     el.chatTitle.textContent = info.name;
-                                    el.chatAvatar.innerHTML = avatarHtml(info.name, info.avatarUrl, 34);
+                                    el.chatAvatar.innerHTML = avatarHtml(info.name, info.avatarUrl, 36);
                               }
                         }
                   } catch {
@@ -1333,15 +1736,410 @@
                   }
             }
 
+            /* ================================================================
+               GROUP MEMBERS — GET /api/Conversation/{id}/members, same endpoint
+               used for direct-chat name resolution. For groups we show every
+               member exactly as returned (name/avatar as given by the API),
+               with no rewriting. Loaded automatically as soon as a group chat
+               is opened, so the data is ready the moment the panel is expanded
+               — the toggle button only shows/hides it, it doesn't gate the fetch.
+               ================================================================ */
+            async function loadGroupMembers(conversationId) {
+                  el.groupMembersList.innerHTML = `<div class="empty-hint">Loading members…</div>`;
+                  try {
+                        const members = await authedFetch(CONFIG.conversationMembersPath(conversationId));
+                        const memberList = Array.isArray(members) ? members : (members.items ?? members.Items ?? []);
+
+                        const ids = memberList.map(m => (typeof m === 'string' ? m : (m.userId ?? m.UserId ?? m.id ?? m.Id))).filter(Boolean);
+                        const infos = await Promise.all(ids.map(id => getUserInfo(id)));
+
+                        if (conversationId !== state.activeConversationId) return; // switched chats while loading
+
+                        el.groupMembersList.innerHTML = '';
+                        ids.forEach((id, i) => {
+                              const info = infos[i];
+                              const name = info?.name ?? id.slice(0, 8) + '…';
+                              const chip = document.createElement('div');
+                              chip.className = 'member-chip';
+                              chip.innerHTML = `${avatarHtml(name, info?.avatarUrl, 22)}<span>${escapeHtml(name)}</span>`;
+                              el.groupMembersList.appendChild(chip);
+                        });
+                        if (ids.length === 0) {
+                              el.groupMembersList.innerHTML = `<div class="empty-hint">No members returned.</div>`;
+                        }
+                  } catch (err) {
+                        if (conversationId !== state.activeConversationId) return;
+                        el.groupMembersList.innerHTML = `<div class="empty-hint">Could not load members (${err.message}). Check CONFIG.conversationMembersPath.</div>`;
+                  }
+            }
+
+            el.groupMembersToggle.addEventListener('click', () => {
+                  const isOpen = el.groupMembersPanel.classList.toggle('open');
+                  el.groupMembersToggle.classList.toggle('open', isOpen);
+                  // Data is already loading/loaded from selectConversation(); if a
+                  // previous attempt failed (e.g. empty-hint error still showing),
+                  // retry on open instead of leaving the user stuck.
+                  if (isOpen && state.activeConversationId && el.groupMembersList.querySelector('.empty-hint')) {
+                        loadGroupMembers(state.activeConversationId);
+                  }
+            });
+
+            /* ================================================================
+               GROUP INFO / MANAGEMENT MODAL — WhatsApp-style: tap the group
+               photo to open a panel showing the photo, name, description, full
+               member list (with an "Admin" badge on conversation.adminId), and
+               management actions gated on whether the viewer IS that admin:
+                 - admin: can edit name/description/image, add/remove members,
+                   delete the whole group
+                 - everyone: can leave the group
+               The add/remove/edit endpoints aren't confirmed against a real
+               controller action (see CONFIG comments) — wire failures surface
+               as an inline error rather than failing silently.
+               ================================================================ */
+            el.chatAvatar.addEventListener('click', () => {
+                  if (!el.chatAvatar.classList.contains('chat-avatar-clickable')) return;
+                  if (!state.activeConversationId) return;
+                  openGroupInfoModal(state.activeConversationId);
+            });
+
+            function resetGroupInfoAddState() {
+                  state.groupInfo.addModeOn = false;
+                  state.groupInfo.selectedToAddIds = new Set();
+                  el.groupInfoAddPicker.style.display = 'none';
+                  el.groupInfoAddPicker.innerHTML = '';
+                  el.groupInfoAddConfirmBtn.style.display = 'none';
+            }
+
+            async function openGroupInfoModal(conversationId) {
+                  const convo = state.conversations.get(conversationId);
+                  if (!convo?.isGroup) return;
+
+                  state.groupInfo.conversationId = conversationId;
+                  const isAdmin = !!convo.adminId && convo.adminId === state.userId;
+                  state.groupInfo.isAdmin = isAdmin;
+                  resetGroupInfoAddState();
+
+                  el.groupInfoAvatar.innerHTML = avatarHtml(convo.title, convo.avatarUrl, 96);
+                  el.groupInfoTitleInput.value = convo.title ?? '';
+                  el.groupInfoDescInput.value = convo.description ?? '';
+                  el.groupInfoImageInput.value = convo.avatarUrl ?? '';
+                  el.groupInfoImageInput.style.display = 'none';
+
+                  // Only the admin can edit name/description/image or remove members
+                  // or delete the group — everyone else sees read-only info + Leave.
+                  el.groupInfoTitleInput.disabled = !isAdmin;
+                  el.groupInfoDescInput.disabled = !isAdmin;
+                  el.groupInfoAvatarEdit.style.display = isAdmin ? 'flex' : 'none';
+                  el.groupInfoSaveBtn.style.display = isAdmin ? 'inline-block' : 'none';
+                  el.groupInfoAddMemberBtn.style.display = isAdmin ? 'inline-block' : 'none';
+                  el.groupInfoDeleteBtn.style.display = isAdmin ? 'inline-block' : 'none';
+                  el.groupInfoSaveHint.style.display = 'none';
+
+                  el.groupInfoBackdrop.classList.add('open');
+
+                  el.groupInfoMembersList.innerHTML = `<div class="empty-hint">Loading members…</div>`;
+                  try {
+                        const members = await authedFetch(CONFIG.conversationMembersPath(conversationId));
+                        const memberList = Array.isArray(members) ? members : (members.items ?? members.Items ?? []);
+                        const ids = memberList.map(m => (typeof m === 'string' ? m : (m.userId ?? m.UserId ?? m.id ?? m.Id))).filter(Boolean);
+                        state.groupInfo.memberIds = ids;
+
+                        if (state.groupInfo.conversationId !== conversationId) return; // switched away while loading
+
+                        const infos = await Promise.all(ids.map(id => getUserInfo(id)));
+                        renderGroupInfoMembers(ids, infos, conversationId, isAdmin, convo.adminId);
+                  } catch (err) {
+                        el.groupInfoMembersList.innerHTML = `<div class="empty-hint">Could not load members (${err.message}).</div>`;
+                  }
+            }
+
+            function renderGroupInfoMembers(ids, infos, conversationId, isAdmin, adminId) {
+                  if (ids.length === 0) {
+                        el.groupInfoMembersList.innerHTML = `<div class="empty-hint">No members returned.</div>`;
+                        return;
+                  }
+                  el.groupInfoMembersList.innerHTML = '';
+                  ids.forEach((id, i) => {
+                        const info = infos[i];
+                        const name = info?.name ?? id.slice(0, 8) + '…';
+                        const isThisAdmin = id === adminId;
+                        const row = document.createElement('div');
+                        row.className = 'member-manage-row';
+                        row.innerHTML = `
+      ${avatarHtml(name, info?.avatarUrl, 32)}
+      <span class="picker-name">${escapeHtml(name)}</span>
+      ${isThisAdmin ? `<span class="admin-badge">Admin</span>` : ''}
+      ${(isAdmin && !isThisAdmin) ? `<button class="danger-btn remove-member-btn" data-user-id="${id}">Remove</button>` : ''}
+    `;
+                        if (isAdmin && !isThisAdmin) {
+                              row.querySelector('.remove-member-btn').addEventListener('click', () => removeGroupMember(conversationId, id, name));
+                        }
+                        el.groupInfoMembersList.appendChild(row);
+                  });
+            }
+
+            /* ================================================================
+               Shared group-update call — CONFIRMED (see CONFIG comments) there
+               is no separate add/remove-member endpoint, so every membership or
+               info change PUTs the full desired state, including the complete
+               member list, to /api/Conversation/{id}.
+               ================================================================ */
+            async function updateConversation(conversationId, { title, description, profilePictureUrl, usersId }) {
+                  if (!state.userId) {
+                        // Should never happen post-login, but if it does, sending the
+                        // request would just reproduce the exact "UserId is required"
+                        // 400 from the server with no clue why — fail fast instead.
+                        throw new Error('state.userId is empty — not logged in?');
+                  }
+                  const body = {
+                        conversationId,
+                        userId: state.userId,
+                        title,
+                        description,
+                        // Required and rejects empty string — "N/A" matches the
+                        // convention this file already uses for "no value" on
+                        // creation (see createConvoBtn's handler above).
+                        profilePictureUrl: (profilePictureUrl && profilePictureUrl.trim()) || 'N/A',
+                        usersId,
+                  };
+                  // Log the exact outgoing body — if you still see "UserId"/
+                  // "ProfilePictureUrl required" after this, check this console line
+                  // first: if userId/profilePictureUrl show up here correctly but the
+                  // server still rejects them, it's a backend-side binding mismatch,
+                  // not a client bug. If they're missing HERE, the browser is still
+                  // running a stale cached copy of this file — hard-refresh (Ctrl+Shift+R).
+                  console.log('[updateConversation] PUT', CONFIG.updateConversationPath(conversationId), body);
+                  return authedFetch(CONFIG.updateConversationPath(conversationId), {
+                        method: 'PUT',
+                        body: JSON.stringify(body),
+                  });
+            }
+
+            async function removeGroupMember(conversationId, userId, name) {
+                  if (!confirm(`Remove ${name} from the group?`)) return;
+                  const convo = state.conversations.get(conversationId);
+                  const newMemberIds = state.groupInfo.memberIds.filter(id => id !== userId);
+                  try {
+                        await updateConversation(conversationId, {
+                              title: convo?.title,
+                              description: convo?.description,
+                              profilePictureUrl: convo?.avatarUrl,
+                              usersId: newMemberIds,
+                        });
+                        state.groupInfo.memberIds = newMemberIds;
+                        openGroupInfoModal(conversationId); // refresh the list from server
+                  } catch (err) {
+                        alert(`Remove failed: ${err.message}. Check CONFIG.updateConversationPath's body shape against your UpdateConversationCommand.`);
+                  }
+            }
+
+            // Change-photo click target
+            el.groupInfoAvatarEdit.addEventListener('click', () => {
+                  el.groupInfoImageInput.style.display = el.groupInfoImageInput.style.display === 'none' ? 'block' : 'none';
+                  if (el.groupInfoImageInput.style.display === 'block') el.groupInfoImageInput.focus();
+            });
+
+            el.groupInfoImageInput.addEventListener('input', () => {
+                  const convo = state.conversations.get(state.groupInfo.conversationId);
+                  el.groupInfoAvatar.innerHTML = avatarHtml(el.groupInfoTitleInput.value || convo?.title, el.groupInfoImageInput.value.trim(), 96);
+            });
+
+            el.groupInfoSaveBtn.addEventListener('click', async () => {
+                  const conversationId = state.groupInfo.conversationId;
+                  if (!conversationId) return;
+
+                  const title = el.groupInfoTitleInput.value.trim();
+                  const description = el.groupInfoDescInput.value.trim();
+                  const imageUrl = el.groupInfoImageInput.value.trim();
+                  if (!title) { alert('Group name is required.'); return; }
+
+                  el.groupInfoSaveBtn.disabled = true;
+                  el.groupInfoSaveBtn.textContent = 'Saving…';
+                  try {
+                        await updateConversation(conversationId, {
+                              title,
+                              description,
+                              profilePictureUrl: imageUrl,
+                              usersId: state.groupInfo.memberIds,
+                        });
+
+                        const convo = state.conversations.get(conversationId);
+                        if (convo) {
+                              convo.title = title;
+                              convo.description = description;
+                              convo.avatarUrl = imageUrl || null;
+                              renderConversationList();
+                              if (conversationId === state.activeConversationId) {
+                                    el.chatTitle.textContent = title;
+                                    el.chatAvatar.innerHTML = avatarHtml(title, convo.avatarUrl, 36);
+                              }
+                        }
+                        el.groupInfoSaveHint.style.display = 'none';
+                  } catch (err) {
+                        el.groupInfoSaveHint.textContent = `Save failed: ${err.message}. Check CONFIG.updateConversationPath and its body shape against your UpdateConversationCommand.`;
+                        el.groupInfoSaveHint.style.display = 'block';
+                  } finally {
+                        el.groupInfoSaveBtn.disabled = false;
+                        el.groupInfoSaveBtn.textContent = 'Save changes';
+                  }
+            });
+
+            // -------- Add members --------
+            el.groupInfoAddMemberBtn.addEventListener('click', async () => {
+                  state.groupInfo.addModeOn = !state.groupInfo.addModeOn;
+                  if (!state.groupInfo.addModeOn) { resetGroupInfoAddState(); return; }
+
+                  el.groupInfoAddPicker.style.display = 'block';
+                  el.groupInfoAddPicker.innerHTML = `<div class="empty-hint">Loading users…</div>`;
+
+                  if (state.allUsers.length === 0) {
+                        try {
+                              const raw = await authedFetch(CONFIG.usersListPath());
+                              const users = Array.isArray(raw) ? raw : (raw.items ?? raw.Items ?? []);
+                              state.allUsers = users
+                                    .map(u => ({
+                                          id: u.id ?? u.Id,
+                                          name: u.displayName ?? u.DisplayName ?? u.username ?? u.Username ?? u.email ?? u.Email ?? '(unnamed)',
+                                          avatarUrl: u.profilePictureUrl ?? u.ProfilePictureUrl ?? null,
+                                    }))
+                                    .filter(u => u.id);
+                        } catch (err) {
+                              el.groupInfoAddPicker.innerHTML = `<div class="empty-hint">Could not load users (${err.message}).</div>`;
+                              return;
+                        }
+                  }
+
+                  renderGroupInfoAddPicker();
+            });
+
+            function renderGroupInfoAddPicker() {
+                  const candidates = state.allUsers.filter(u => !state.groupInfo.memberIds.includes(u.id));
+                  if (candidates.length === 0) {
+                        el.groupInfoAddPicker.innerHTML = `<div class="empty-hint">Everyone is already in this group.</div>`;
+                        el.groupInfoAddConfirmBtn.style.display = 'none';
+                        return;
+                  }
+                  el.groupInfoAddPicker.innerHTML = '';
+                  for (const u of candidates) {
+                        const isSelected = state.groupInfo.selectedToAddIds.has(u.id);
+                        const row = document.createElement('div');
+                        row.className = 'user-picker-row' + (isSelected ? ' selected' : '');
+                        row.innerHTML = `
+      <span class="picker-check">${isSelected ? '✓' : ''}</span>
+      ${avatarHtml(u.name, u.avatarUrl, 28)}
+      <span class="picker-name">${escapeHtml(u.name)}</span>
+    `;
+                        row.addEventListener('click', () => {
+                              if (state.groupInfo.selectedToAddIds.has(u.id)) state.groupInfo.selectedToAddIds.delete(u.id);
+                              else state.groupInfo.selectedToAddIds.add(u.id);
+                              renderGroupInfoAddPicker();
+                        });
+                        el.groupInfoAddPicker.appendChild(row);
+                  }
+                  el.groupInfoAddConfirmBtn.style.display = state.groupInfo.selectedToAddIds.size > 0 ? 'inline-block' : 'none';
+            }
+
+            el.groupInfoAddConfirmBtn.addEventListener('click', async () => {
+                  const conversationId = state.groupInfo.conversationId;
+                  const newIds = [...state.groupInfo.selectedToAddIds];
+                  if (!conversationId || newIds.length === 0) return;
+
+                  const convo = state.conversations.get(conversationId);
+                  const fullMemberIds = [...state.groupInfo.memberIds, ...newIds];
+
+                  try {
+                        await updateConversation(conversationId, {
+                              title: convo?.title,
+                              description: convo?.description,
+                              profilePictureUrl: convo?.avatarUrl,
+                              usersId: fullMemberIds,
+                        });
+                        resetGroupInfoAddState();
+                        openGroupInfoModal(conversationId); // reload members from server
+                  } catch (err) {
+                        alert(`Add members failed: ${err.message}. Check CONFIG.updateConversationPath's body shape against your UpdateConversationCommand.`);
+                  }
+            });
+
+            // -------- Leave / delete group --------
+            el.groupInfoLeaveBtn.addEventListener('click', async () => {
+                  const conversationId = state.groupInfo.conversationId;
+                  if (!conversationId) return;
+                  if (!confirm('Leave this group?')) return;
+
+                  try {
+                        await authedFetch(CONFIG.leaveConversationPath(conversationId, state.userId), { method: 'POST' });
+                        state.conversations.delete(conversationId);
+                        state.messagesByConversation.delete(conversationId);
+                        el.groupInfoBackdrop.classList.remove('open');
+                        if (conversationId === state.activeConversationId) {
+                              state.activeConversationId = null;
+                              el.chatTitle.textContent = 'No conversation selected';
+                              el.chatSub.textContent = '';
+                              el.chatAvatar.innerHTML = '';
+                              el.chatAvatar.classList.remove('chat-avatar-clickable');
+                              el.catchUpBtn.style.display = 'none';
+                              el.deleteConvoBtn.style.display = 'none';
+                              el.messageInput.disabled = true;
+                              el.sendBtn.disabled = true;
+                              el.messages.innerHTML = `<div class="center-placeholder">You left this group.</div>`;
+                        }
+                        renderConversationList();
+                  } catch (err) {
+                        alert(`Leave failed: ${err.message}. Check CONFIG.leaveConversationPath against your backend.`);
+                  }
+            });
+
+            el.groupInfoDeleteBtn.addEventListener('click', () => {
+                  // Reuse the exact same delete flow/endpoint as the header's
+                  // "Delete conversation" button — group deletion is just deleting
+                  // the conversation, no separate endpoint needed.
+                  el.groupInfoBackdrop.classList.remove('open');
+                  el.deleteConvoBtn.click();
+            });
+
+            el.closeGroupInfoBtn.addEventListener('click', () => {
+                  el.groupInfoBackdrop.classList.remove('open');
+            });
+            el.groupInfoBackdrop.addEventListener('click', (e) => {
+                  if (e.target === el.groupInfoBackdrop) el.groupInfoBackdrop.classList.remove('open');
+            });
+
             async function refreshSingleConversation(conversationId) {
                   if (!state.conversations.has(conversationId)) {
+                        // Placeholder first so something shows immediately, then replace
+                        // with the real GetConversationById data — this used to always
+                        // assume isGroup: false, so a newly-created group conversation
+                        // would show up looking like a direct chat until a full page
+                        // reload. Fetching the real record fixes title/image/isGroup/
+                        // adminId for both cases.
                         state.conversations.set(conversationId, {
                               id: conversationId,
                               title: `Conversation ${conversationId.slice(0, 8)}…`,
                               isGroup: false,
                               unreadCount: 1,
                         });
-                        resolveDirectConversationName(conversationId);
+                        try {
+                              const c = await authedFetch(CONFIG.conversationByIdPath(conversationId, state.userId));
+                              const isGroup = c.isGroup ?? c.IsGroup ?? false;
+                              state.conversations.set(conversationId, {
+                                    id: conversationId,
+                                    title: c.title ?? c.Title ?? c.name ?? c.Name ?? '(untitled)',
+                                    description: c.description ?? c.Description ?? '',
+                                    isGroup,
+                                    avatarUrl: isGroup
+                                          ? (c.imageUrl ?? c.ImageUrl ?? c.profilePictureUrl ?? c.ProfilePictureUrl ?? null)
+                                          : null,
+                                    adminId: isGroup ? (c.adminId ?? c.AdminId ?? null) : null,
+                                    usersId: c.usersId ?? c.UsersId ?? null,
+                                    unreadCount: 1,
+                              });
+                              if (!isGroup) resolveDirectConversationName(conversationId);
+                        } catch {
+                              // Fall back to the direct-name resolution the old code always did
+                              // — best effort if GetConversationById's shape doesn't match.
+                              resolveDirectConversationName(conversationId);
+                        }
                   }
                   renderConversationList();
             }
@@ -1373,11 +2171,25 @@
                   const convo = state.conversations.get(conversationId);
                   el.chatTitle.textContent = convo?.title ?? conversationId;
                   el.chatSub.textContent = conversationId;
-                  el.chatAvatar.innerHTML = avatarHtml(convo?.title, convo?.avatarUrl, 34);
+                  el.chatAvatar.innerHTML = avatarHtml(convo?.title, convo?.avatarUrl, 36);
+                  // Group avatar doubles as the entry point into group management
+                  // (WhatsApp-style: tap the photo to see/manage the group).
+                  el.chatAvatar.classList.toggle('chat-avatar-clickable', !!convo?.isGroup);
+                  el.chatAvatar.title = convo?.isGroup ? 'View group info' : '';
                   el.catchUpBtn.style.display = 'inline-block';
                   el.deleteConvoBtn.style.display = 'inline-block';
                   el.messageInput.disabled = false;
                   el.sendBtn.disabled = false;
+
+                  // Group members panel: only offered for group conversations, and
+                  // collapsed fresh every time we switch chats. The fetch itself
+                  // starts right away (not gated on the toggle) so the data is
+                  // already there the moment the user expands the panel.
+                  el.groupMembersPanel.classList.remove('open');
+                  el.groupMembersToggle.classList.remove('open');
+                  el.groupMembersList.innerHTML = '';
+                  el.groupMembersToggle.style.display = convo?.isGroup ? 'inline-flex' : 'none';
+                  if (convo?.isGroup) loadGroupMembers(conversationId);
 
                   await state.connection.invoke('JoinConversation', conversationId);
 
@@ -1512,6 +2324,19 @@
                RENDERING
                ================================================================ */
             function appendMessage(conversationId, msg, opts = {}) {
+                  // Keep this conversation's local message list in sync with every
+                  // message we render or receive — enterEditMode's cancel lookup,
+                  // save-edit's local patch, and fetchMissedMessages' "since" timestamp
+                  // all read from state.messagesByConversation, but previously nothing
+                  // ever pushed into it (only selectConversation reset it to []). That's
+                  // why edits/cancels silently no-op'd and catch-up always fell back to
+                  // "24h ago" — the array these features rely on was always empty, so
+                  // the UI would show one thing locally until the next reload pulled
+                  // fresh data from the server and it visibly "changed back".
+                  const localList = state.messagesByConversation.get(conversationId) ?? [];
+                  localList.push(msg);
+                  state.messagesByConversation.set(conversationId, localList);
+
                   if (conversationId !== state.activeConversationId) {
                         // Message for a background conversation — bump its badge instead
                         // of rendering (server-side UnreadCountChanged should also do this,
@@ -1529,8 +2354,15 @@
                   const sentAt = msg.sendDate ?? msg.SendDate ?? msg.sentAt ?? msg.SentAt;
                   const messageId = msg.id ?? msg.Id;
 
+                  // Group consecutive bubbles from the same sender closer together,
+                  // like a real chat thread, instead of every message getting equal
+                  // spacing and a repeated avatar.
+                  const lastRow = el.messages.querySelector('.msg-row:last-child');
+                  const isGrouped = lastRow?.dataset.senderId === (senderId ?? '');
+
                   const row = document.createElement('div');
-                  row.className = 'msg-row' + (isMine ? ' mine-row' : '');
+                  row.className = 'msg-row' + (isMine ? ' mine-row' : '') + (isGrouped ? ' grouped' : '');
+                  row.dataset.senderId = senderId ?? '';
 
                   const cachedSender = !isMine ? state.userInfoCache.get(senderId) : null;
                   const senderLabel = isMine ? 'you' : (cachedSender?.name ?? senderId?.slice(0, 8));
@@ -1799,7 +2631,7 @@
                         row.className = 'user-picker-row' + (isSelected ? ' selected' : '');
                         row.innerHTML = `
       ${isGroup ? `<span class="picker-check">${isSelected ? '✓' : ''}</span>` : ''}
-      ${avatarHtml(u.name, u.avatarUrl, 28)}
+      ${avatarHtml(u.name, u.avatarUrl, 32)}
       <span class="picker-name">${escapeHtml(u.name)}</span>
       <span class="uid">${u.id.slice(0, 8)}…</span>
     `;
@@ -1824,12 +2656,14 @@
                   const usersId = isGroup ? [...state.selectedGroupUserIds] : [state.selectedOtherUserId];
                   if (!usersId[0] || (isGroup && usersId.length < 2)) return;
 
-                  // Per the API's non-nullable string fields: group chats send whatever
-                  // the user typed; single (1:1) chats send the literal "N/A" since
-                  // title/description/picture aren't meaningful there — the title gets
-                  // auto-derived server-side from the other participant's name instead
-                  // (see CreateConversationCommandHandler), and description/picture have
-                  // nothing to attach to for a plain direct message.
+                  // The API's Title field is required (non-nullable) even for single
+                  // (1:1) chats — sending null triggers a 400 "The Title field is
+                  // required." validation error. So single chats send the other user's
+                  // name as the stored title; description/picture stay "N/A" since
+                  // they have nothing to attach to for a plain direct message. (The
+                  // sidebar/header still show the *viewer-relative* other-participant
+                  // name via resolveDirectConversationName, regardless of what's stored.)
+                  const otherUser = state.allUsers.find(u => u.id === state.selectedOtherUserId);
                   const body = isGroup
                         ? {
                               creatorId: state.userId,
@@ -1842,7 +2676,7 @@
                         }
                         : {
                               creatorId: state.userId,
-                              title: null,
+                              title: 'N/A',
                               description: 'N/A',
                               isGroup: false,
                               profilePictureUrl: 'N/A',

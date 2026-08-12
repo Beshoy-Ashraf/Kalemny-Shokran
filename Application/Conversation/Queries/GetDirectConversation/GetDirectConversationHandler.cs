@@ -14,6 +14,7 @@ public class GetDirectConversationHandler(IUnitOfWork unitOfWork) : IRequestHand
             {
                   Id = conversation.Id,
                   Title = conversation.Title,
+                  IsGroup = conversation.IsGroup,
                   Description = conversation.Description,
                   ImageUrl = conversation.ProfilePictureUrl,
                   UsersId = [.. conversation.UserConversations.Select(x => x.UserId)],

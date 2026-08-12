@@ -3,4 +3,4 @@ using MediatR;
 
 namespace Application.Conversation.Queries.GetConversationById;
 
-public record GetConversationByIdQuery(Guid ConversationId) : IRequest<ConversationResponse>;
+public record GetConversationByIdQuery(Guid SenderId, Guid ConversationId) : IRequest<ConversationResponse>;

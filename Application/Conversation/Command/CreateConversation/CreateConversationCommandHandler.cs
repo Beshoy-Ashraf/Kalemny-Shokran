@@ -49,6 +49,7 @@ public class CreateConversationCommandHandler(IUnitOfWork unitOfWork, IChatNotif
             {
                   Id = conversation.Id,
                   AdminId = request.CreatorId,
+                  IsGroup = conversation.IsGroup,
                   Title = conversation.Title,
                   Description = conversation.Description,
                   ImageUrl = conversation.ProfilePictureUrl,
